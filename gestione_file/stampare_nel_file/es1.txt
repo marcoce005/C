@@ -1,0 +1,4 @@
+marco	cellini	10
+marco	tranaso	8
+ciao	pippo	8
+pippo	ciao	7

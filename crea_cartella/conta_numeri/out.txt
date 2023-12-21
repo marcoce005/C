@@ -1,0 +1,18 @@
+4
+5
+5
+7
+0
+1
+5
+7
+0
+1
+1
+3
+3
+7
+
+
+Nel testo ci sono:	14 numeri
+La loro somma e':	49
