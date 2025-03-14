@@ -26,21 +26,39 @@ int main(void)
 
 int binary_search(int v[LEN], int key)
 {
-    int start = 0, end = LEN - 1, found = 0, middle;
+    int start = 0, end = LEN - 1, middle;
 
-    while (start <= end && found == 0)
+    while (start <= end)
     {
         middle = (start + end) / 2;
 
         if (v[middle] == key)
-            found = 1;
+            return middle;
         if (v[middle] < key)
             start = middle + 1;
         else
             end = middle - 1;
     }
-    return found == 0 ? -1 : middle;
+    return -1;
 }
+
+// int binary_search(int v[LEN], int key)
+// {
+//     int start = 0, end = LEN - 1, found = 0, middle;
+
+//     while (start <= end && found == 0)
+//     {
+//         middle = (start + end) / 2;
+
+//         if (v[middle] == key)
+//             found = 1;
+//         if (v[middle] < key)
+//             start = middle + 1;
+//         else
+//             end = middle - 1;
+//     }
+//     return found == 0 ? -1 : middle;
+// }
 
 void print_vet(int v[LEN])
 {
