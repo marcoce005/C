@@ -53,4 +53,5 @@ void read_data_from_file(int *tot1, int *tot2, int *count1, int *count2)
                 }
             }
         }
+    fclose(file);
 }

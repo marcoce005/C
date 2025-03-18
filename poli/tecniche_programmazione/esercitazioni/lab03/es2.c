@@ -3,6 +3,7 @@
 int is_leap(int y);                  // 1 if is leap
 int check_date(int d, int m, int y); // 1 if it's a wrong date
 int days_in_month(int m, int y);     // return the numbers of days in a specific month
+// void recursive_next_N_day(int *d, int *m, int *y, int n);
 void next_N_day(int *d, int *m, int *y, int n);
 
 int main(void)
@@ -24,6 +25,7 @@ int main(void)
     printf("\nInsert N number:\t");
     scanf("%d", &n);
 
+    // recursive_next_N_day(&d, &m, &y, n);
     next_N_day(&d, &m, &y, n);
 
     printf("\n%d/%d/%d", d, m, y);
@@ -58,24 +60,56 @@ int days_in_month(int m, int y)
 
 void next_N_day(int *d, int *m, int *y, int n)
 {
-    // int feb = is_leap((*y)) ? 29 : 28, days;
-
-    // switch (*m)
-    // {
-    // case 4:
-    // case 6:
-    // case 9:
-    // case 11:
-    //     days = 30;
-    //     break;
-
-    // default:
-    //     days = 31;
-    //     break;
-    // }
-
+    int limit;
     while (n != 0)
     {
-        /* code */
+        limit = days_in_month(*m, *y);
+        if (*d + n > limit)
+        {
+            n = *d + n - limit;
+            *d = 0;
+
+            if (*m + 1 > 12)
+            {
+                (*y)++;
+                (*m) = 1;
+            }
+            else
+                (*m)++;
+        }
+        else
+        {
+            *d += n;
+            n = 0;
+        }
     }
+}
+
+void recursive_next_N_day(int *d, int *m, int *y, int n)
+{
+    int limit = days_in_month(*m, *y);
+
+    if (n == 0)
+        return;
+
+    if (*d + n > limit)
+    {
+        n = *d + n - limit;
+        *d = 0;
+
+        if (*m + 1 > 12)
+        {
+            (*y)++;
+            (*m) = 1;
+        }
+        else
+            (*m)++;
+    }
+    else
+    {
+        *d += n;
+        n = 0;
+    }
+
+    return recursive_next_N_day(d, m, y, n);
 }
