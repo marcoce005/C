@@ -1,0 +1,11 @@
+Formulazione:
+    o crittografare il contenuto di un file testo, immagazzinando il risultato in un secondo file
+    
+    o la crittografia consiste nel modificare i codici dei caratteri alfabetici e numerici, secondo le regole seguenti:
+        • ogni codice numerico n (0..9) viene trasformato nel codice complemento-a-9 (9-n):
+        • ogni codice alfabetico ch viene trasformato scambiando maiuscole e minuscole, e facendo il complemento-a- 'z' ('a' + 'z' -ch)
+
+Soluzione:
+    o leggere iterativamente i caratteri dal primo file
+    o a seconda del tipo di carattere applicare la codifica opportuna
+    o scrivere il carattere via via ottenuto sul secondo file
