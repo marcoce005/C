@@ -20,17 +20,17 @@ int main(void)
 
 void insertion_sort(int len, int v[])
 {
-    int index;
+    int index, tmp;
     for (int i = 1; i < len; i++)
     {
         index = i;
-        while (v[index] < v[index - 1] && index > 0)
+        tmp = v[i];
+        while (index > 0 && tmp < v[index - 1])
         {
-            v[index] = v[index] ^ v[index - 1];
-            v[index - 1] = v[index] ^ v[index - 1];
-            v[index] = v[index] ^ v[index - 1];
+            v[index] = v[index - 1]; // make space for the new number
             index--;
         }
+        v[index] = tmp;
     }
 }
 

@@ -22,6 +22,7 @@ int main(void)
 
 void optimized_bubble_sort(int len, int v[len])
 {
+    int tmp;
     for (int i = 0; i < len; i++)
     {
         int swapped = 0;
@@ -29,9 +30,12 @@ void optimized_bubble_sort(int len, int v[len])
             if (v[j] > v[j + 1])
             {
                 swapped = 1;
-                v[j] = v[j] ^ v[j + 1];
-                v[j + 1] = v[j] ^ v[j + 1];
-                v[j] = v[j] ^ v[j + 1];
+                // v[j] = v[j] ^ v[j + 1];
+                // v[j + 1] = v[j] ^ v[j + 1];
+                // v[j] = v[j] ^ v[j + 1];
+                tmp = v[j + 1];
+                v[j + 1] = v[j];
+                v[j] = tmp;
             }
         if (swapped == 0)
             return;
