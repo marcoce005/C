@@ -50,7 +50,61 @@ int main(void)
     printf("\n\nPop the last value:\t");
     print_list(list);
 
+    index = 0;
+    delete (&list, index);
+    printf("\n\nDelete element at the index %d:\t", index);
+    print_list(list);
+
+    index = 3;
+    delete (&list, index);
+    printf("\n\nDelete element at the index %d:\t", index);
+    print_list(list);
+
+    index = 4;
+    delete (&list, index);
+    printf("\n\nDelete element at the index %d:\t", index);
+    print_list(list);
+
     return 0;
+}
+
+void delete(node_pointer *head, int index)
+{
+    if (*head == NULL)
+    {
+        printf("\nThe list is already empty.");
+        return;
+    }
+
+    node_pointer curr = *head, tmp;
+    if (index == 0)
+    {
+        *head = (*head)->next;
+        free(curr);
+    }
+    else
+    {
+        while (curr->next != NULL && index-- != 1)
+            curr = curr->next;
+
+        if (index != 0)
+        {
+            printf("\nIndex choosen do not exist.");
+            return;
+        }
+
+        if (curr->next->next == NULL)
+        {
+            free(curr->next->next);
+            curr->next = NULL;
+        }
+        else
+        {
+            tmp = curr->next;
+            curr->next = curr->next->next;
+            free(tmp);
+        }
+    }
 }
 
 void pop_back(node_pointer *head)
