@@ -10,6 +10,8 @@ typedef struct Node
 void print_list(node_pointer head);            // single pointer if we don't want edit the list
 void push_back(node_pointer *head, int value); // double pointer if we want edit the list
 void insert(node_pointer *head, int index, int value);
+void pop_back(node_pointer *head);
+void delete(node_pointer *head, int index);
 node_pointer new_node(int value);
 
 int main(void)
@@ -28,22 +30,52 @@ int main(void)
 
     insert(&list, 0, 11);
 
-    printf("\nInsert at the head:\t");
+    printf("\n\nInsert at the head:\t");
     print_list(list);
 
     index = 2;
     insert(&list, index, 2);
 
-    printf("\nInsert in the middle [index = %d]:\t", 2);
+    printf("\n\nInsert in the middle [index = %d]:\t", index);
     print_list(list);
 
     index = 7;
     insert(&list, index, -1);
 
-    printf("\nInsert in an unknown index [index = %d]:\t", 7);
+    printf("\n\nInsert in an unknown index [index = %d]:\t", index);
+    print_list(list);
+
+    pop_back(&list);
+
+    printf("\n\nPop the last value:\t");
     print_list(list);
 
     return 0;
+}
+
+void pop_back(node_pointer *head)
+{
+    if (*head == NULL)
+    {
+        printf("\nThe list is already empty.");
+        return;
+    }
+
+    node_pointer curr = *head;
+
+    if (curr->next == NULL)
+    {
+        free(curr);
+        *head = NULL;
+    }
+    else
+    {
+        while (curr->next->next != NULL)
+            curr = curr->next;
+
+        free(curr->next);
+        curr->next = NULL;
+    }
 }
 
 void insert(node_pointer *head, int index, int value)
