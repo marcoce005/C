@@ -23,9 +23,10 @@ typedef enum
 
 void to_lower(char str[]);
 void print_mat(int m[][MAX_ROW_COL], int r, int c);
-void reverse_arr(int v[], int start, int end);
-void shift_row(int m[][MAX_ROW_COL], int r, int c, int index, int direction, int position);
-void shift_column(int m[][MAX_ROW_COL], int r, int c, int index, int direction, int position);
+void reverse_row(int v[], int start, int end);
+void reverse_column(int m[][MAX_ROW_COL], int index, int start, int end);
+void shift_row(int m[][MAX_ROW_COL], int c, int index, int direction, int position);
+void shift_column(int m[][MAX_ROW_COL], int r, int index, int direction, int position);
 int get_matrix(FILE *in, int m[][MAX_ROW_COL], int *r, int *c);
 selector str_2_selector(char str[], char key_word[][10], int l);
 direction str_2_direction(char str[], char key_word[][10], int l);
@@ -52,35 +53,52 @@ int main(void)
 
     while (exit == 0)
     {
-        printf("\n<selector> <index> <direction> <position>\n");
-        printf("Possible selector:\t'riga', 'colonna', 'fine'\nPossible selector:\t'destra', 'sinistra', 'su', 'giu'\n--> ");
-        scanf("%s", str);
+        printf("\n<selector> <index [> 0]> <direction> <position>\n");
+        printf("Possible selector:\t'riga', 'colonna', 'fine'\nPossible selector:\t'destra', 'sinistra', 'su', 'giu'\nExit --> fine 0 0 0\n--> ");
 
-        if (sscanf(str, "%s %d %s %d", select, &index, direct, &position) != 4)
+        if (scanf("%s %d %s %d", select, &index, direct, &position) != 4)
             printf("\nInvalid string");
 
+        to_lower(select);
+        to_lower(direct);
         sel = str_2_selector(select, selector_word, sizeof(selector_word) / sizeof(selector_word[0]));
         dir = str_2_selector(direct, direction_word, sizeof(direction_word) / sizeof(direction_word[0]));
 
         if (sel < 0 || index < 0 || dir < 0 || position < 0)
-            printf("\nInvalid string");
+        {
+            if (sel == fine)
+                exit = 1;
+            else
+                printf("\nInvalid string");
+        }
         else
         {
             switch (sel)
             {
             case riga:
-                if (dir > 2)
+                if (dir > 1)
                     printf("\nDirection error.");
+                else if (index > nr)
+                    printf("\nIndex error.");
                 else
                 {
-                    shift_row(mat, nr, nc, index, dir, position);
+                    shift_row(mat, nc, index - 1, dir, position);
                     printf("\nCurrent matrix:\n");
                     print_mat(mat, nr, nc);
                 }
                 break;
 
             case colonna:
-                /* code */
+                if (dir < 2)
+                    printf("\nDirection error.");
+                else if (index > nc)
+                    printf("\nIndex error.");
+                else
+                {
+                    shift_column(mat, nr, index - 1, dir, position);
+                    printf("\nCurrent matrix:\n");
+                    print_mat(mat, nr, nc);
+                }
                 break;
 
             case fine:
@@ -93,7 +111,26 @@ int main(void)
     return 0;
 }
 
-void reverse_arr(int v[], int start, int end)
+void reverse_column(int m[][MAX_ROW_COL], int index, int start, int end)
+{
+    int tmp;
+    while (end > start)
+    {
+        tmp = m[start][index];
+        m[start++][index] = m[end][index];
+        m[end--][index] = tmp;
+    }
+}
+
+void shift_column(int m[][MAX_ROW_COL], int r, int index, int direction, int position)
+{
+    position = direction == 3 ? r - position : position;
+    reverse_column(m, index, 0, position - 1);
+    reverse_column(m, index, position, r - 1);
+    reverse_column(m, index, 0, r - 1);
+}
+
+void reverse_row(int v[], int start, int end)
 {
     int tmp;
     while (end > start)
@@ -104,12 +141,12 @@ void reverse_arr(int v[], int start, int end)
     }
 }
 
-void shift_row(int m[][MAX_ROW_COL], int r, int c, int index, int direction, int position)
+void shift_row(int m[][MAX_ROW_COL], int c, int index, int direction, int position)
 {
     position = direction == 0 ? c - position : position;
-    reverse_arr(m[index], 0, position - 1);
-    reverse_arr(m[index], position, c - 1);
-    reverse_arr(m[index], 0, c - 1);
+    reverse_row(m[index], 0, position - 1);
+    reverse_row(m[index], position, c - 1);
+    reverse_row(m[index], 0, c - 1);
 }
 
 int get_matrix(FILE *in, int m[][MAX_ROW_COL], int *r, int *c)
@@ -157,7 +194,6 @@ void to_lower(char str[])
 
 void print_mat(int m[][MAX_ROW_COL], int r, int c)
 {
-
     for (int i = 0; i < r; i++)
     {
         for (int j = 0; j < c; j++)
