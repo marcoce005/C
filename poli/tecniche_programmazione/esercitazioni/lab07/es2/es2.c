@@ -9,7 +9,7 @@
 
 int read_text(FILE *in, char l[][MAX_LEN_WORD]);
 int print_occurence(FILE *in, char text[][MAX_LEN_WORD], int l);
-int str_in_text(char sub[], char str[]); // if the sub_string in str
+int str_in_text(char sub[], char str[]); // if the sub_string in str rerurn the index of the sub_string
 void to_lower(char str[], char lower[]);
 void clear_str(char s[], int l);
 
@@ -26,6 +26,10 @@ int main(void)
         fclose(fp_text);
         return -1;
     }
+
+    // for (int i = 0; i < len; i++) {
+    //     printf("%s\n", text[i]);
+    // }
 
     fp_sequence = fopen(SEQUENCE_PATH, "r");
     ans = print_occurence(fp_sequence, text, len);
@@ -70,7 +74,7 @@ int print_occurence(FILE *in, char text[][MAX_LEN_WORD], int l)
             clear_str(lower, sizeof(lower));
             to_lower(text[j], lower);
 
-            if (str_in_text(sub_str, lower))
+            if (str_in_text(sub_str, lower) >= 0)
             {
                 printf(" - '%s' (position %d)\n", text[j], j + 1);
                 count++;
@@ -96,7 +100,7 @@ void to_lower(char str[], char lower[])
 int str_in_text(char sub[], char str[])
 {
     if (strlen(sub) > strlen(str))
-        return 0;
+        return -1;
 
     int i, j;
     for (i = 0; i <= strlen(str) - strlen(sub); i++)
@@ -104,9 +108,9 @@ int str_in_text(char sub[], char str[])
         for (j = 0; j < strlen(sub) && str[i + j] == sub[j]; j++)
             ;
         if (j == strlen(sub))
-            return 1;
+            return i;
     }
-    return 0;
+    return -1;
 }
 
 int read_text(FILE *in, char l[][MAX_LEN_WORD])
@@ -117,8 +121,27 @@ int read_text(FILE *in, char l[][MAX_LEN_WORD])
         return -1;
     }
 
-    int i;
+    int i, j, index_punt;
+    char tmp[MAX_LEN_WORD];
     for (i = 0; i < MAX_WORDS && fscanf(in, "%s", l[i]) == 1; i++)
-        ;
+    {
+        index_punt = str_in_text("'", l[i]);
+        if (index_punt >= 0 && i + 1 < MAX_WORDS)
+        {
+            clear_str(tmp, sizeof(tmp));
+            for (j = index_punt + 1; j < strlen(l[i]); j++)
+                tmp[j - index_punt - 1] = l[i][j];
+            strcpy(l[i + 1], tmp);
+
+            clear_str(tmp, sizeof(tmp));
+
+            for (j = 0; j < index_punt; j++)
+                tmp[j] = l[i][j];
+            strcpy(l[i], tmp);
+
+            clear_str(tmp, sizeof(tmp));
+            i++;
+        }
+    }
     return i;
 }
