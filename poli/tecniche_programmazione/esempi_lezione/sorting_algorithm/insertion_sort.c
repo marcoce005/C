@@ -2,6 +2,7 @@
 
 void print_vet(int len, int v[len]);
 void insertion_sort(int len, int v[len]);
+void reverse_insertion_sort(int len, int v[]);
 
 int main(void)
 {
@@ -10,7 +11,7 @@ int main(void)
     printf("\nBefore:\t");
     print_vet(sizeof(v) / sizeof(int), v);
 
-    insertion_sort(sizeof(v) / sizeof(int), v);
+    reverse_insertion_sort(sizeof(v) / sizeof(int), v);
 
     printf("\nAfter:\t");
     print_vet(sizeof(v) / sizeof(int), v);
@@ -26,6 +27,22 @@ void insertion_sort(int len, int v[])
         index = i;
         tmp = v[i];
         while (index > 0 && tmp < v[index - 1])
+        {
+            v[index] = v[index - 1]; // make space for the new number
+            index--;
+        }
+        v[index] = tmp;
+    }
+}
+
+void reverse_insertion_sort(int len, int v[])
+{
+    int index, tmp;
+    for (int i = 1; i < len; i++)
+    {
+        index = i;
+        tmp = v[i];
+        while (index > 0 && tmp > v[index - 1])
         {
             v[index] = v[index - 1]; // make space for the new number
             index--;
