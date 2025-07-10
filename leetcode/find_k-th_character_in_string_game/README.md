@@ -14,7 +14,7 @@ Return the value of the $k^{th}$ character in ```word```, after enough operation
 
 Note that the character ```'z'``` can be changed to ```'a'``` in the operation.
 
-### Example 1:
+### Example 0:
 Input: k = 5
 
 Output: "b"
@@ -27,7 +27,7 @@ Initially, word = "a". We need to do the operation three times:
  -  Generated string is "bc", word becomes "abbc".
  - Generated string is "bccd", word becomes "abbcbccd".
 
-### Example 2:
+### Example 1:
 
 Input: k = 10
 
