@@ -11,7 +11,7 @@ int main()
     char p[][20] = {"ciro", "nolo", "Fotografi"}, regex[] = "\\Ao[tc]o.raf\\a", *found;
     int i;
 
-    for (i = 0; i < sizeof(p) / sizeof(p[0]); i++)
+    for (i = 0; i < (int)sizeof(p) / sizeof(p[0]); i++)
     {
         found = cercaRegexp(p[i], regex);
         printf("%s\n", found == NULL ? "NULL" : found);
@@ -37,7 +37,7 @@ char *cercaRegexp(char *src, char *regexp)
     int i, special = 0, skip = 0;
     char *sub_str;
 
-    for (i = 0; i < strlen(regexp) && skip != 1 && src[i - special] != '\0'; i++)
+    for (i = 0; i < (int)strlen(regexp) && skip != 1 && src[i - special] != '\0'; i++)
     {
         switch (regexp[i])
         {
