@@ -8,10 +8,10 @@ char *copy_sub(char *regex);
 
 int main()
 {
-    char p[][20] = {"ciro", "noto", "Foto"}, regex[] = "\\aoto", *found;
+    char p[][20] = {"ciro", "nolo", "Fotografi"}, regex[] = "\\Ao[tc]o.raf\\a", *found;
     int i;
 
-    for (int i = 0; i < sizeof(p) / sizeof(p[0]); i++)
+    for (i = 0; i < sizeof(p) / sizeof(p[0]); i++)
     {
         found = cercaRegexp(p[i], regex);
         printf("%s\n", found == NULL ? "NULL" : found);
@@ -23,11 +23,12 @@ int main()
 char *copy_sub(char *regex)
 {
     int i;
+    char *sub;
     for (i = 0; regex[i] != ']'; i++)
         ;
-    regex[i] = '\0';
-    char *sub = (char *)malloc(i * sizeof(char));
+    sub = (char *)malloc(i * sizeof(char));
     strcpy(sub, regex);
+    sub[i] = '\0';
     return sub;
 }
 
@@ -36,30 +37,33 @@ char *cercaRegexp(char *src, char *regexp)
     int i, special = 0, skip = 0;
     char *sub_str;
 
-    for (i = 0; i < strlen(regexp) && skip != 1; i++)
+    for (i = 0; i < strlen(regexp) && skip != 1 && src[i - special] != '\0'; i++)
     {
-        printf("(%c, %c) --> ", regexp[i], src[i - special]);
-        printf("\ni = %d\tspec = %d\n", i, special);
-
         switch (regexp[i])
         {
         case '.':
             break;
 
         case '[':
-            sub_str = copy_sub(regexp + 1);
-            if ((regexp[i + 1] == '^' && strchr(sub_str, src[i - special]) != NULL) || strchr(sub_str, src[i - special]) == NULL)
+            sub_str = copy_sub(regexp + i + (regexp[i + 1] == '^' ? 2 : 1));
+            if ((regexp[i + 1] == '^' && strchr(sub_str, src[i - special]) != NULL) || (regexp[i + 1] != '^' && strchr(sub_str, src[i - special]) == NULL))
                 skip = 1;
-            special += strlen(sub_str) + (regexp[i + 1] == '^' ? 1 : 0);
-            i += special;
+            else
+            {
+                special += strlen(sub_str) + (regexp[i + 1] == '^' ? 2 : 1);
+                i += special;
+            }
             free(sub_str);
             break;
 
         case '\\':
             if ((regexp[i + 1] == 'a' && !islower(src[i - special])) || (regexp[i + 1] == 'A' && !isupper(src[i - special])))
                 skip = 1;
-            i++;
-            special++;
+            else
+            {
+                i++;
+                special++;
+            }
             break;
 
         default:
@@ -69,9 +73,7 @@ char *cercaRegexp(char *src, char *regexp)
         }
     }
 
-    printf("\n");
-
-    if (strlen(src + 1) - strlen(regexp) < 0 || *(src + 1) == '\0')
+    if (src[i - special] == '\0' && regexp[i] != '\0')
         return NULL;
     if (skip)
         return cercaRegexp(src + 1, regexp);
