@@ -6,7 +6,7 @@
 char *cercaRegexp(char *src, char *regexp); // NULL --> not found
 char *copy_sub(char *regex);
 
-int main()
+int main(void)
 {
     char p[][20] = {"ciro", "nolo", "Fotografi"}, regex[] = "\\Ao[tc]o.raf\\a", *found;
     int i;
