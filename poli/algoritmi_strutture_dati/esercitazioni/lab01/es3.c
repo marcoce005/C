@@ -33,12 +33,16 @@ typedef struct Tratte
 
 typedef enum // --> typed command
 {
-    r_date,        // -->  "date"
-    r_partenza,    // -->  "partenza"
-    r_capolinea,   // -->  "capolinea"
-    r_ritardo,     // -->  "ritardo"
-    r_ritardo_tot, // -->  "ritardo_tot"
-    r_fine         // --> "fine"
+    r_date,                     // -->  "date"
+    r_partenza,                 // -->  "partenza"
+    r_capolinea,                // -->  "capolinea"
+    r_ritardo,                  // -->  "ritardo"
+    r_ritardo_tot,              // -->  "ritardo_tot"
+    r_ordina,                   // --> "ordina"
+    r_codice_tratta,            // --> "codice_tratta"
+    r_ricerca_partenza,         // --> "ricerca_partenza"               [linear research]
+    r_ricerca_binaria_partenza, // --> "ricerca_binaria_partenza"       [binary research]
+    r_fine                      // --> "fine"
 } comando_e;
 
 comando_e leggiComando(char str[]); // return -1 --> command not found
@@ -51,7 +55,11 @@ void print_tratta(tratte tr, int file);
 void partenza_and_capolinea(tratte logs[], int len, comando_e command, char str[], int file);
 void ritardo_tot(tratte logs[], int len, char str[]);
 void open_output_file();
-int between_date(date d0, date d1, date d2); // check if d2 is between d0 and d1 or viceversa
+void sort(tratte log[], int n, comando_e command);
+void linear_search(tratte log[], int n, char str[]);
+void binary_search(tratte log[], int n, char str[], int l, int r);
+int between_date(date d0, date d1, date d2);          // check if d2 is between d0 and d1 or viceversa
+int compare_date(date d0, time t0, date d1, time t1); // check if d1,t1 < d0,t0
 
 int main(void)
 {
@@ -62,12 +70,15 @@ int main(void)
 
     while (exit == 0)
     {
-        printf("\nCommand [format date = yyyy/mm/dd] :\n");
+        printf("\nCommand:\n");
         printf(" - 'date' <data1> <data2>\n");
         printf(" - 'partenza' <fermata>\n");
         printf(" - 'capolinea' <fermata>\n");
         printf(" - 'ritardo' <data1> <data2>\n");
         printf(" - 'ritardo_tot' <ID corsa>\n");
+        printf(" - 'ordina'\n");
+        printf(" - 'ricerca_partenza'\n");
+        printf(" - 'ricerca_binaria_partenza'\n");
         printf(" - 'fine'\n--> ");
         scanf("%s", command);
 
@@ -80,6 +91,103 @@ int main(void)
 
     free(logs);
     return 0;
+}
+
+void linear_search(tratte log[], int n, char str[])
+{
+    int i;
+    char sub_str[MAX_LEN];
+
+    to_lower(str);
+    for (i = 0; i < n; i++)
+    {
+        strcpy(sub_str, log[i].partenza);
+        to_lower(sub_str);
+        sub_str[strlen(str)] = '\0';
+
+        if (strcmp(sub_str, str) == 0)
+            print_tratta(log[i], 0);
+    }
+}
+
+void binary_search(tratte log[], int n, char str[], int l, int r)
+{
+    if (l > r)
+        return;
+
+    int m = (l + r) / 2, check;
+    char sub_str[MAX_LEN];
+
+    strcpy(sub_str, log[m].partenza);
+    sub_str[strlen(str)] = '\0';
+    to_lower(sub_str);
+    check = strcmp(str, sub_str);
+
+    if (check == 0)
+    {
+        print_tratta(log[m], 0);
+        binary_search(log, n, str, l, m - 1);
+    }
+    if (check < 0)
+        binary_search(log, n, str, l, m - 1);
+    else
+        binary_search(log, n, str, m + 1, r);
+}
+
+int compare_date(date d0, time t0, date d1, time t1)
+{
+    int n0 = d0.yyyy * 365 + d0.mm * 31 + d0.dd,
+        n1 = d1.yyyy * 365 + d1.mm * 31 + d1.dd;
+
+    if (n1 == n0) // if the date is the same --> sort by depature's time
+    {
+        n0 = t0.hh * 24 + t0.mm * 60 + t0.ss;
+        n1 = t1.hh * 24 + t1.mm * 60 + t1.ss;
+    }
+    return n1 < n0;
+}
+
+void sort(tratte log[], int n, comando_e command)
+{
+    int i, j, i_min, is_less;
+    tratte tmp;
+    for (i = 0; i < n - 1; i++)
+    {
+        i_min = i;
+        for (j = i + 1; j < n; j++)
+        {
+            switch (command)
+            {
+            case r_date:
+                is_less = compare_date(log[i_min].data, log[i_min].ora_partenza, log[j].data, log[j].ora_partenza);
+                break;
+
+            case r_codice_tratta:
+                is_less = strcmp(log[j].codice_tratta, log[i_min].codice_tratta) < 0;
+                break;
+
+            case r_partenza:
+                is_less = strcmp(log[j].partenza, log[i_min].partenza) < 0;
+                break;
+
+            case r_capolinea:
+                is_less = strcmp(log[j].destinazione, log[i_min].destinazione) < 0;
+                break;
+
+            default:
+                break;
+            }
+            if (is_less)
+                i_min = j;
+        }
+
+        if (i != i_min)
+        {
+            tmp = log[i];
+            log[i] = log[i_min];
+            log[i_min] = tmp;
+        }
+    }
 }
 
 void open_output_file()
@@ -205,50 +313,72 @@ void date_and_ritardo(tratte logs[], int len, comando_e command, char str[], int
 void selezionatiDati(tratte logs[], int n, comando_e command)
 {
     char str[MAX_LEN];
-    int file = 0;
+    int file = 0, i;
+
+    fgetc(stdin); // flush the stream
     switch (command)
     {
     case r_date:
         printf("Enter the dates you want search [format date = yyyy/mm/dd]:\n--> ");
-        fgetc(stdin); // flush the stream
         fgets(str, MAX_LEN, stdin);
-        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n--> ");
         scanf("%d", &file);
         date_and_ritardo(logs, n, r_date, str, file);
         break;
 
     case r_partenza:
-        printf("Enter the departure's station [don't use space ' ' instead use underscore '_']:\n-->");
-        fgetc(stdin); // flush the stream
+        printf("Enter the departure's station [don't use space ' ' instead use underscore '_']:\n--> ");
         fgets(str, MAX_LEN, stdin);
-        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n--> ");
         scanf("%d", &file);
         partenza_and_capolinea(logs, n, r_partenza, str, file);
         break;
 
     case r_capolinea:
-        printf("Enter the arrive's station [don't use space ' ' instead use underscore '_']:\n-->");
-        fgetc(stdin); // flush the stream
+        printf("Enter the arrive's station [don't use space ' ' instead use underscore '_']:\n--> ");
         fgets(str, MAX_LEN, stdin);
-        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n--> ");
         scanf("%d", &file);
         partenza_and_capolinea(logs, n, r_capolinea, str, file);
         break;
 
     case r_ritardo:
         printf("Enter the dates between you want seach the delayed routes [format date = yyyy/mm/dd]:\n--> ");
-        fgetc(stdin); // flush the stream
         fgets(str, MAX_LEN, stdin);
-        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n--> ");
         scanf("%d", &file);
         date_and_ritardo(logs, n, r_ritardo, str, file);
         break;
 
     case r_ritardo_tot:
-        printf("Enter the codice_tratta ID [codice_tratta format: GTTXXX, X are numbers]:\n-->");
-        fgetc(stdin); // flush the stream
+        printf("Enter the codice_tratta ID [codice_tratta format: GTTXXX, X are numbers]:\n--> ");
         fgets(str, MAX_LEN, stdin);
         ritardo_tot(logs, n, str);
+        break;
+
+    case r_ordina:
+        printf("Choose the sorting method:\n - 'date'\n - 'codice_tratta'\n - 'partenza'\n - 'capolinea'\n--> ");
+        fgets(str, MAX_LEN, stdin);
+        str[strlen(str) - 1] = '\0'; // remove '\n' at the end
+        sort(logs, n, leggiComando(str));
+        for (i = 0; i < n; i++)
+            print_tratta(logs[i], 0);
+        break;
+
+    case r_ricerca_partenza:
+        printf("Enter the departure's station or a part of the name [don't use space ' ' instead use underscore '_']:\n--> ");
+        fgets(str, MAX_LEN, stdin);
+        str[strlen(str) - 1] = '\0'; // remove '\n' at the end
+        linear_search(logs, n, str);
+        break;
+
+    case r_ricerca_binaria_partenza:
+        printf("Enter the departure's station or a part of the name [don't use space ' ' instead use underscore '_']:\n--> ");
+        fgets(str, MAX_LEN, stdin);
+        str[strlen(str) - 1] = '\0'; // remove '\n' at the end
+        sort(logs, n, r_partenza);
+        to_lower(str);
+        binary_search(logs, n, str, 0, n);
         break;
 
     default:
@@ -317,6 +447,10 @@ comando_e leggiComando(char str[])
         "capolinea",
         "ritardo",
         "ritardo_tot",
+        "ordina",
+        "codice_tratta",
+        "ricerca_partenza",
+        "ricerca_binaria_partenza",
         "fine"};
     int i;
 
