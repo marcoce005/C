@@ -5,7 +5,10 @@
 
 #define MAX_LEN 30 + 1
 #define MAX_ROW 1000
-#define FILE_PATH "corse.txt"
+#define FILE_PATH_SOURCE "corse.txt"
+#define FILE_PATH_DEST "output.txt"
+
+FILE *fp_output;
 
 typedef struct Date
 {
@@ -43,10 +46,11 @@ tratte *read_file(int *len);
 void selezionatiDati(tratte logs[], int n, comando_e command);
 void to_lower(char *str);
 void to_upper(char *str);
-void date_and_ritardo(tratte logs[], int n, comando_e command, char str[]);
-void print_tratta(tratte tr);
-void partenza_and_capolinea(tratte logs[], int len, comando_e command, char str[]);
+void date_and_ritardo(tratte logs[], int n, comando_e command, char str[], int file);
+void print_tratta(tratte tr, int file);
+void partenza_and_capolinea(tratte logs[], int len, comando_e command, char str[], int file);
 void ritardo_tot(tratte logs[], int len, char str[]);
+void open_output_file();
 int between_date(date d0, date d1, date d2); // check if d2 is between d0 and d1 or viceversa
 
 int main(void)
@@ -78,6 +82,17 @@ int main(void)
     return 0;
 }
 
+void open_output_file()
+{
+    fp_output = fopen(FILE_PATH_DEST, "a");
+
+    if (fp_output == NULL)
+    {
+        printf("\nFIle not found");
+        exit(1);
+    }
+}
+
 void ritardo_tot(tratte logs[], int len, char str[])
 {
     char tmp[MAX_ROW];
@@ -96,9 +111,12 @@ void ritardo_tot(tratte logs[], int len, char str[])
         printf("\nThe route %s was not found in the logs or it's not delayed\n", str);
 }
 
-void partenza_and_capolinea(tratte logs[], int len, comando_e command, char str[])
+void partenza_and_capolinea(tratte logs[], int len, comando_e command, char str[], int file)
 {
     char tmp[MAX_LEN];
+
+    if (file)
+        open_output_file();
 
     str[strlen(str) - 1] = '\0'; // remove '\n' at the and of the command
     to_lower(str);
@@ -107,26 +125,48 @@ void partenza_and_capolinea(tratte logs[], int len, comando_e command, char str[
         strcpy(tmp, (command == r_partenza ? logs[i].partenza : logs[i].destinazione));
         to_lower(tmp);
         if ((command == r_partenza && strcmp(str, tmp) == 0) || (command == r_capolinea && strcmp(str, tmp) == 0))
-            print_tratta(logs[i]);
+            print_tratta(logs[i], file);
+    }
+
+    if (file) // made space for new output
+    {
+        fprintf(fp_output, "\n\n");
+        fclose(fp_output);
     }
 }
 
-void print_tratta(tratte tr)
+void print_tratta(tratte tr, int file)
 {
-    printf("%s %s %s %d/%02d/%02d %02d:%02d:%02d %02d:%02d:%02d %d\n",
-           tr.codice_tratta,
-           tr.partenza,
-           tr.destinazione,
-           tr.data.yyyy,
-           tr.data.mm,
-           tr.data.dd,
-           tr.ora_partenza.hh,
-           tr.ora_partenza.mm,
-           tr.ora_partenza.ss,
-           tr.ora_arrivo.hh,
-           tr.ora_arrivo.mm,
-           tr.ora_arrivo.ss,
-           tr.ritardo);
+    if (!file)
+        printf("%s %s %s %d/%02d/%02d %02d:%02d:%02d %02d:%02d:%02d %d\n",
+               tr.codice_tratta,
+               tr.partenza,
+               tr.destinazione,
+               tr.data.yyyy,
+               tr.data.mm,
+               tr.data.dd,
+               tr.ora_partenza.hh,
+               tr.ora_partenza.mm,
+               tr.ora_partenza.ss,
+               tr.ora_arrivo.hh,
+               tr.ora_arrivo.mm,
+               tr.ora_arrivo.ss,
+               tr.ritardo);
+    else
+        fprintf(fp_output, "%s %s %s %d/%02d/%02d %02d:%02d:%02d %02d:%02d:%02d %d\n",
+                tr.codice_tratta,
+                tr.partenza,
+                tr.destinazione,
+                tr.data.yyyy,
+                tr.data.mm,
+                tr.data.dd,
+                tr.ora_partenza.hh,
+                tr.ora_partenza.mm,
+                tr.ora_partenza.ss,
+                tr.ora_arrivo.hh,
+                tr.ora_arrivo.mm,
+                tr.ora_arrivo.ss,
+                tr.ritardo);
 }
 
 int between_date(date d0, date d1, date d2) // convert in a pseudo unix time and compare
@@ -138,7 +178,7 @@ int between_date(date d0, date d1, date d2) // convert in a pseudo unix time and
     return (n2 >= n0 && n2 <= n1) || (n2 >= n1 && n2 <= n0);
 }
 
-void date_and_ritardo(tratte logs[], int len, comando_e command, char str[])
+void date_and_ritardo(tratte logs[], int len, comando_e command, char str[], int file)
 {
     date date0, date1;
 
@@ -148,42 +188,60 @@ void date_and_ritardo(tratte logs[], int len, comando_e command, char str[])
         return;
     }
 
+    if (file)
+        open_output_file();
+
     for (int i = 0; i < len; i++)
         if (between_date(date0, date1, logs[i].data) && (logs[i].ritardo > 0 || command == r_date))
-            print_tratta(logs[i]);
+            print_tratta(logs[i], file);
+
+    if (file) // made space for new output
+    {
+        fprintf(fp_output, "\n\n");
+        fclose(fp_output);
+    }
 }
 
 void selezionatiDati(tratte logs[], int n, comando_e command)
 {
     char str[MAX_LEN];
+    int file = 0;
     switch (command)
     {
     case r_date:
         printf("Enter the dates you want search [format date = yyyy/mm/dd]:\n--> ");
         fgetc(stdin); // flush the stream
         fgets(str, MAX_LEN, stdin);
-        date_and_ritardo(logs, n, r_date, str);
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        scanf("%d", &file);
+        date_and_ritardo(logs, n, r_date, str, file);
         break;
 
     case r_partenza:
         printf("Enter the departure's station [don't use space ' ' instead use underscore '_']:\n-->");
         fgetc(stdin); // flush the stream
         fgets(str, MAX_LEN, stdin);
-        partenza_and_capolinea(logs, n, r_partenza, str);
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        scanf("%d", &file);
+        partenza_and_capolinea(logs, n, r_partenza, str, file);
         break;
 
     case r_capolinea:
         printf("Enter the arrive's station [don't use space ' ' instead use underscore '_']:\n-->");
         fgetc(stdin); // flush the stream
         fgets(str, MAX_LEN, stdin);
-        partenza_and_capolinea(logs, n, r_capolinea, str);
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        scanf("%d", &file);
+        partenza_and_capolinea(logs, n, r_capolinea, str, file);
         break;
 
     case r_ritardo:
         printf("Enter the dates between you want seach the delayed routes [format date = yyyy/mm/dd]:\n--> ");
         fgetc(stdin); // flush the stream
         fgets(str, MAX_LEN, stdin);
-        date_and_ritardo(logs, n, r_ritardo, str);
+        printf("Where do you want see the output?\n - file type '1'\n - console type '0'\n-->");
+        scanf("%d", &file);
+        date_and_ritardo(logs, n, r_ritardo, str, file);
         break;
 
     case r_ritardo_tot:
@@ -213,7 +271,7 @@ void to_upper(char *str)
 
 tratte *read_file(int *len)
 {
-    FILE *fp = fopen(FILE_PATH, "r");
+    FILE *fp = fopen(FILE_PATH_SOURCE, "r");
     int i;
 
     if (fp == NULL)
