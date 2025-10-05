@@ -8,8 +8,6 @@
 #define FILE_PATH_SOURCE "corse.txt"
 #define FILE_PATH_DEST "output.txt"
 
-FILE *fp_output;
-
 typedef struct Date
 {
     int yyyy, mm, dd;
@@ -55,18 +53,34 @@ void print_tratta(tratte tr, int file);
 void partenza_and_capolinea(tratte logs[], int len, comando_e command, char str[], int file);
 void ritardo_tot(tratte logs[], int len, char str[]);
 void open_output_file();
-void sort(tratte log[], int n, comando_e command);
+void sort(tratte *log[], int n, comando_e command);
 void linear_search(tratte log[], int n, char str[]);
-void binary_search(tratte log[], int n, char str[], int l, int r);
+void binary_search(tratte *log[], char str[], int l, int r);
 int between_date(date d0, date d1, date d2);          // check if d2 is between d0 and d1 or viceversa
 int compare_date(date d0, time t0, date d1, time t1); // check if d1,t1 < d0,t0
 
+// public variable
+FILE *fp_output;
+
+tratte **sorted_date,
+    **sorted_codice_tratta,
+    **sorted_partenza,
+    **sorted_capolinea;
+
 int main(void)
 {
-    int n_logs, exit = 0;
+    int n_logs, exit = 0, i;
     comando_e command_enum;
     char command[MAX_LEN];
     tratte *logs = read_file(&n_logs);
+
+    sorted_date = (tratte **)malloc(n_logs * sizeof(tratte *));
+    sorted_codice_tratta = (tratte **)malloc(n_logs * sizeof(tratte *));
+    sorted_partenza = (tratte **)malloc(n_logs * sizeof(tratte *));
+    sorted_capolinea = (tratte **)malloc(n_logs * sizeof(tratte *));
+
+    for (i = 0; i < n_logs; i++)
+        sorted_capolinea[i] = sorted_partenza[i] = sorted_codice_tratta[i] = sorted_date[i] = logs + i;
 
     while (exit == 0)
     {
@@ -89,6 +103,10 @@ int main(void)
         selezionatiDati(logs, n_logs, command_enum);
     }
 
+    free(sorted_date);
+    free(sorted_codice_tratta);
+    free(sorted_partenza);
+    free(sorted_capolinea);
     free(logs);
     return 0;
 }
@@ -110,7 +128,7 @@ void linear_search(tratte log[], int n, char str[])
     }
 }
 
-void binary_search(tratte log[], int n, char str[], int l, int r)
+void binary_search(tratte *log[], char str[], int l, int r)
 {
     if (l > r)
         return;
@@ -118,20 +136,21 @@ void binary_search(tratte log[], int n, char str[], int l, int r)
     int m = (l + r) / 2, check;
     char sub_str[MAX_LEN];
 
-    strcpy(sub_str, log[m].partenza);
+    strcpy(sub_str, log[m]->partenza);
     sub_str[strlen(str)] = '\0';
     to_lower(sub_str);
     check = strcmp(str, sub_str);
 
     if (check == 0)
     {
-        print_tratta(log[m], 0);
-        binary_search(log, n, str, l, m - 1);
+        print_tratta(*log[m], 0);
+        binary_search(log, str, l, m - 1);
+        binary_search(log, str, m + 1, r);
     }
-    if (check < 0)
-        binary_search(log, n, str, l, m - 1);
+    else if (check < 0)
+        binary_search(log, str, l, m - 1);
     else
-        binary_search(log, n, str, m + 1, r);
+        binary_search(log, str, m + 1, r);
 }
 
 int compare_date(date d0, time t0, date d1, time t1)
@@ -147,10 +166,10 @@ int compare_date(date d0, time t0, date d1, time t1)
     return n1 < n0;
 }
 
-void sort(tratte log[], int n, comando_e command)
+void sort(tratte *log[], int n, comando_e command)
 {
     int i, j, i_min, is_less;
-    tratte tmp;
+    tratte *tmp;
     for (i = 0; i < n - 1; i++)
     {
         i_min = i;
@@ -159,19 +178,19 @@ void sort(tratte log[], int n, comando_e command)
             switch (command)
             {
             case r_date:
-                is_less = compare_date(log[i_min].data, log[i_min].ora_partenza, log[j].data, log[j].ora_partenza);
+                is_less = compare_date(log[i_min]->data, log[i_min]->ora_partenza, log[j]->data, log[j]->ora_partenza);
                 break;
 
             case r_codice_tratta:
-                is_less = strcmp(log[j].codice_tratta, log[i_min].codice_tratta) < 0;
+                is_less = strcmp(log[j]->codice_tratta, log[i_min]->codice_tratta) < 0;
                 break;
 
             case r_partenza:
-                is_less = strcmp(log[j].partenza, log[i_min].partenza) < 0;
+                is_less = strcmp(log[j]->partenza, log[i_min]->partenza) < 0;
                 break;
 
             case r_capolinea:
-                is_less = strcmp(log[j].destinazione, log[i_min].destinazione) < 0;
+                is_less = strcmp(log[j]->destinazione, log[i_min]->destinazione) < 0;
                 break;
 
             default:
@@ -314,6 +333,8 @@ void selezionatiDati(tratte logs[], int n, comando_e command)
 {
     char str[MAX_LEN];
     int file = 0, i;
+    comando_e sort_type;
+    tratte ***logs_sorted; // pointer to vector of pointer
 
     fgetc(stdin); // flush the stream
     switch (command)
@@ -360,9 +381,36 @@ void selezionatiDati(tratte logs[], int n, comando_e command)
         printf("Choose the sorting method:\n - 'date'\n - 'codice_tratta'\n - 'partenza'\n - 'capolinea'\n--> ");
         fgets(str, MAX_LEN, stdin);
         str[strlen(str) - 1] = '\0'; // remove '\n' at the end
-        sort(logs, n, leggiComando(str));
+        sort_type = leggiComando(str);
+
+        switch (sort_type)
+        {
+        case r_date:
+            sort(sorted_date, n, sort_type);
+            logs_sorted = &sorted_date;
+            break;
+
+        case r_codice_tratta:
+            sort(sorted_codice_tratta, n, sort_type);
+            logs_sorted = &sorted_codice_tratta;
+            break;
+
+        case r_partenza:
+            sort(sorted_partenza, n, sort_type);
+            logs_sorted = &sorted_partenza;
+            break;
+
+        case r_capolinea:
+            sort(sorted_capolinea, n, sort_type);
+            logs_sorted = &sorted_capolinea;
+            break;
+
+        default:
+            break;
+        }
+
         for (i = 0; i < n; i++)
-            print_tratta(logs[i], 0);
+            print_tratta(*((*logs_sorted)[i]), 0);
         break;
 
     case r_ricerca_partenza:
@@ -376,9 +424,9 @@ void selezionatiDati(tratte logs[], int n, comando_e command)
         printf("Enter the departure's station or a part of the name [don't use space ' ' instead use underscore '_']:\n--> ");
         fgets(str, MAX_LEN, stdin);
         str[strlen(str) - 1] = '\0'; // remove '\n' at the end
-        sort(logs, n, r_partenza);
+        sort(sorted_partenza, n, r_partenza);
         to_lower(str);
-        binary_search(logs, n, str, 0, n);
+        binary_search(sorted_partenza, str, 0, n - 1);
         break;
 
     default:

@@ -57,7 +57,7 @@ void ritardo_tot(tratte logs[], int len, char str[]);
 void open_output_file();
 void sort(tratte log[], int n, comando_e command);
 void linear_search(tratte log[], int n, char str[]);
-void binary_search(tratte log[], int n, char str[], int l, int r);
+void binary_search(tratte log[], char str[], int l, int r);
 int between_date(date d0, date d1, date d2);          // check if d2 is between d0 and d1 or viceversa
 int compare_date(date d0, time t0, date d1, time t1); // check if d1,t1 < d0,t0
 
@@ -110,7 +110,7 @@ void linear_search(tratte log[], int n, char str[])
     }
 }
 
-void binary_search(tratte log[], int n, char str[], int l, int r)
+void binary_search(tratte log[], char str[], int l, int r)
 {
     if (l > r)
         return;
@@ -126,12 +126,13 @@ void binary_search(tratte log[], int n, char str[], int l, int r)
     if (check == 0)
     {
         print_tratta(log[m], 0);
-        binary_search(log, n, str, l, m - 1);
+        binary_search(log, str, l, m - 1);
+        binary_search(log, str, m + 1, r);
     }
-    if (check < 0)
-        binary_search(log, n, str, l, m - 1);
+    else if (check < 0)
+        binary_search(log, str, l, m - 1);
     else
-        binary_search(log, n, str, m + 1, r);
+        binary_search(log, str, m + 1, r);
 }
 
 int compare_date(date d0, time t0, date d1, time t1)
@@ -378,7 +379,7 @@ void selezionatiDati(tratte logs[], int n, comando_e command)
         str[strlen(str) - 1] = '\0'; // remove '\n' at the end
         sort(logs, n, r_partenza);
         to_lower(str);
-        binary_search(logs, n, str, 0, n);
+        binary_search(logs, str, 0, n - 1);
         break;
 
     default:
