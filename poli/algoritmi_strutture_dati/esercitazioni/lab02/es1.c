@@ -27,7 +27,7 @@ int gcd(int a, int b)
     if (a == b || b == 0)
         return a;
 
-    if (a == 1)
+    if (b == 1)
         return 1;
 
     if (a % 2 == 0 && b % 2 == 0)
