@@ -5,6 +5,7 @@
 
 #define MAX_LEN 50 + 1
 #define CODICE_LEN 5 + 1
+#define FILE_OUT_PATH "output.txt"
 
 typedef enum
 {               // command --> <string>
@@ -44,11 +45,15 @@ link new_node(item val, link next);
 link insert_in_order(link h, item val);
 link aggiungi_file(link h);
 link aggiungi_keyboard(link h);
+link deal_command(comando_e r_command, link head);
 comando_e convert_command(char str[]); // -1 --> not found
 void str_2_lower(char *s);
-link deal_command(comando_e r_command, link head);
-
+void print_list(link h, FILE *fp);
+void wrapper_print_list(link h, int file);
+void print_item(item val, FILE *fp);
 int key_less(date d0, date d1); // is d0 < d1 ?
+item search_by_ID(link h, char id[]);
+item void_item();
 
 int main(void)
 {
@@ -71,12 +76,108 @@ int main(void)
         if (r_comando == r_fine)
             break;
         head = deal_command(r_comando, head);
+
+        printf("\n\n");
+        wrapper_print_list(head, 0);
     }
 
     return 0;
 }
 
-link aggiungi_file(link h) {}
+item void_item()
+{
+    item x;
+    x.cap = -1;
+    return x;
+}
+
+item search_by_ID(link h, char id[])
+{
+    if (h == NULL)
+        return void_item();
+
+    if (strcmp(h->val.codice, id) == 0)
+        return h->val;
+
+    return search_by_ID(h->next, id);
+}
+
+void print_item(item val, FILE *fp)
+{
+    fprintf(fp, "%s | %s | %s | %02d/%02d/%04d | %s | %s | %05d\n",
+            val.codice,
+            val.nome,
+            val.cognome,
+            val.data_di_nascita.dd,
+            val.data_di_nascita.mm,
+            val.data_di_nascita.yyyy,
+            val.via,
+            val.citta,
+            val.cap);
+}
+
+void print_list(link h, FILE *fp)
+{
+    if (h == NULL)
+        return;
+    print_item(h->val, fp);
+    print_list(h->next, fp);
+}
+
+void wrapper_print_list(link h, int file)
+{
+    if (file)
+    {
+        FILE *fp = fopen(FILE_OUT_PATH, "a");
+
+        if (fp == NULL)
+        {
+            printf("\nFile error.");
+            exit(1);
+        }
+
+        print_list(h, fp);
+        fprintf(fp, "\n\n");
+
+        fclose(fp);
+    }
+    print_list(h, stdout);
+}
+
+link aggiungi_file(link h)
+{
+    FILE *fp;
+    char file_path[MAX_LEN];
+    item val;
+
+    printf("Enter file path:\n--> ");
+    scanf("%s", file_path);
+
+    fp = fopen(file_path, "r");
+
+    if (fp == NULL)
+    {
+        printf("\nFile Error");
+        exit(1);
+    }
+
+    while (fscanf(fp, "%s %s %s %d/%d/%d %s %s %d",
+                  val.codice,
+                  val.nome,
+                  val.cognome,
+                  &val.data_di_nascita.dd,
+                  &val.data_di_nascita.mm,
+                  &val.data_di_nascita.yyyy,
+                  val.via,
+                  val.citta,
+                  &val.cap) == 9)
+    {
+        h = insert_in_order(h, val);
+    }
+
+    fclose(fp);
+    return h;
+}
 
 link aggiungi_keyboard(link h)
 {
@@ -133,8 +234,10 @@ link insert_in_order(link h, item val)
     if (h == NULL || key_less(val.data_di_nascita, h->val.data_di_nascita))
         return new_node(val, h);
 
-    for (x = h->next, p = h; x != NULL && key_less(val.data_di_nascita, x->val.data_di_nascita); p = x, x = x->next)
-        p->next = new_node(val, x);
+    for (x = h->next, p = h; x != NULL && !key_less(val.data_di_nascita, x->val.data_di_nascita); p = x, x = x->next)
+        ;
+    p->next = new_node(val, x);
+
     return h;
 }
 
@@ -155,6 +258,8 @@ link new_node(item val, link next)
 link deal_command(comando_e r_command, link head)
 {
     int file;
+    char str[MAX_LEN];
+    item val;
     switch (r_command)
     {
     case r_aggiungi:
@@ -162,7 +267,21 @@ link deal_command(comando_e r_command, link head)
         scanf("%d", &file);
 
         head = file ? aggiungi_file(head) : aggiungi_keyboard(head);
+        break;
 
+    case r_cerca:
+        printf("Enter the the ID code [AXXXX X are number] you want search:\n--> ");
+        scanf("%s", str);
+
+        val = search_by_ID(head, str);
+        if (val.cap == -1)
+            printf("\nItem not found");
+        else
+            print_item(val, stdout);
+        break;
+
+    case r_stampa:
+        wrapper_print_list(head, 1);
         break;
 
     default:
