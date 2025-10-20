@@ -51,9 +51,13 @@ void str_2_lower(char *s);
 void print_list(link h, FILE *fp);
 void wrapper_print_list(link h, int file);
 void print_item(item val, FILE *fp);
-int key_less(date d0, date d1); // is d0 < d1 ?
+void deal_cancella(link *hp, comando_e method);
+int key_less(date d0, date d1);              // is d0 < d1 ?
+int between_date(date d0, date d1, date d2); // d2 is between d0 and d1?
 item search_by_ID(link h, char id[]);
 item void_item();
+item canc_codice(link *hp, char id[]);
+item canc_date(link *hp, date d0, date d1, link *pprev);
 
 int main(void)
 {
@@ -84,6 +88,95 @@ int main(void)
     return 0;
 }
 
+int between_date(date d0, date d1, date d2)
+{
+    return (key_less(d0, d2) && key_less(d2, d1)) || (key_less(d1, d2) && key_less(d2, d0));
+}
+
+item canc_date(link *hp, date d0, date d1, link *pprev)
+{
+    item tmp = void_item();
+    link *xp, t;
+
+    for (xp = hp; *xp != NULL; xp = &((*xp)->next))
+    {
+        if (between_date(d0, d1, (*xp)->val.data_di_nascita))
+        {
+            t = *xp;
+            *xp = (*xp)->next;
+            tmp = t->val;
+            free(t);
+            break;
+        }
+        else
+            *pprev = *xp;
+    }
+    return tmp;
+}
+
+item canc_codice(link *hp, char id[])
+{
+    item tmp = void_item();
+    link *xp, t;
+
+    for (xp = hp; *xp != NULL; xp = &((*xp)->next))
+    {
+        if (strcmp((*xp)->val.codice, id) == 0)
+        {
+            t = *xp;
+            *xp = (*xp)->next;
+            tmp = t->val;
+            free(t);
+            break;
+        }
+    }
+    return tmp;
+}
+
+void deal_cancella(link *hp, comando_e method)
+{
+    char str[MAX_LEN];
+    date d0, d1;
+    item val;
+    link prev;
+    switch (method)
+    {
+    case r_codice:
+        printf("Enter the the ID code [AXXXX X are number] you want delete:\n--> ");
+        scanf("%s", str);
+
+        printf("\nDeleted informations:\n");
+        print_item(canc_codice(hp, str), stdout);
+        break;
+
+    case r_date:
+        printf("Enter the date between you want to delete:\n--> ");
+        getchar();
+        fgets(str, sizeof(str), stdin);
+        sscanf(str, "%d/%d/%d %d/%d/%d",
+               &d0.dd,
+               &d0.mm,
+               &d0.yyyy,
+               &d1.dd,
+               &d1.mm,
+               &d1.yyyy);
+
+        val = canc_date(hp, d0, d1, &prev);
+        print_item(val, stdout);
+
+        while (val.cap != -1)
+        {
+            val = canc_date(&prev, d0, d1, &prev);
+            if (val.cap != -1)
+                print_item(val, stdout);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
 item void_item()
 {
     item x;
@@ -104,16 +197,19 @@ item search_by_ID(link h, char id[])
 
 void print_item(item val, FILE *fp)
 {
-    fprintf(fp, "%s | %s | %s | %02d/%02d/%04d | %s | %s | %05d\n",
-            val.codice,
-            val.nome,
-            val.cognome,
-            val.data_di_nascita.dd,
-            val.data_di_nascita.mm,
-            val.data_di_nascita.yyyy,
-            val.via,
-            val.citta,
-            val.cap);
+    if (val.cap == -1)
+        fprintf(fp, "Void Item\n");
+    else
+        fprintf(fp, "%s | %s | %s | %02d/%02d/%04d | %s | %s | %05d\n",
+                val.codice,
+                val.nome,
+                val.cognome,
+                val.data_di_nascita.dd,
+                val.data_di_nascita.mm,
+                val.data_di_nascita.yyyy,
+                val.via,
+                val.citta,
+                val.cap);
 }
 
 void print_list(link h, FILE *fp)
@@ -260,6 +356,7 @@ link deal_command(comando_e r_command, link head)
     int file;
     char str[MAX_LEN];
     item val;
+    comando_e method;
     switch (r_command)
     {
     case r_aggiungi:
@@ -282,6 +379,13 @@ link deal_command(comando_e r_command, link head)
 
     case r_stampa:
         wrapper_print_list(head, 1);
+        break;
+
+    case r_cancella:
+        printf("Enter the deleting method:\n - 'codice <AXXXX>'\n - 'date' <date0> <date1>\n--> ");
+        scanf("%s", str);
+        method = convert_command(str);
+        deal_cancella(&head, method);
         break;
 
     default:
