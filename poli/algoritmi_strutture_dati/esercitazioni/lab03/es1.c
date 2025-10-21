@@ -1,7 +1,6 @@
 #include <stdio.h>
 
-int majority(int *a, int N); // wrapper
-int majority_recursive(int *a, int N, int pos);
+int majority(int *a, int N);
 
 int main(void)
 {
@@ -14,21 +13,32 @@ int main(void)
     return 0;
 }
 
-int majority(int *a, int N) { return majority_recursive(a, N, 0); }
-
-int majority_recursive(int *a, int N, int pos)
+int majority(int *a, int N)
 {
-    int i, occ = 1;
-
-    if (pos >= N)
-        return -1;
-
-    for (i = 1; i < N - pos && occ <= N / 2; i++)
-        if (*a == a[i])
-            occ++;
-
-    if (occ > N / 2)
+    if (N == 1)
         return *a;
-    else
-        return majority_recursive(a + 1, N, pos + 1);
+
+    int mj_left = majority(a, N / 2),
+        mj_right = majority(a + (N / 2), N / 2),
+        cnt_left = 0,
+        cnt_right = 0;
+
+    if (mj_left == mj_right)
+        return mj_left;
+
+    for (int i = 0; i < N; i++)
+    {
+        if (a[i] == mj_left)
+            cnt_left++;
+        if (a[i] == mj_right)
+            cnt_right++;
+    }
+
+    if (cnt_left > N / 2)
+        return mj_left;
+
+    if (cnt_right > N / 2)
+        return mj_right;
+
+    return -1;
 }
