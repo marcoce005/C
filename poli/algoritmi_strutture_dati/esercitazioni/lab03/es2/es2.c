@@ -52,6 +52,7 @@ void print_list(link h, FILE *fp);
 void wrapper_print_list(link h, int file);
 void print_item(item val, FILE *fp);
 void deal_cancella(link *hp, comando_e method);
+void free_list(link h);
 int key_less(date d0, date d1);              // is d0 < d1 ?
 int between_date(date d0, date d1, date d2); // d2 is between d0 and d1?
 item search_by_ID(link h, char id[]);
@@ -85,7 +86,16 @@ int main(void)
         wrapper_print_list(head, 0);
     }
 
+    free_list(head);
     return 0;
+}
+
+void free_list(link h)
+{
+    if (h == NULL)
+        return;
+    free_list(h->next);
+    free(h);
 }
 
 int between_date(date d0, date d1, date d2)
