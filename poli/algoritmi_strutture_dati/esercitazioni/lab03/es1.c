@@ -19,7 +19,7 @@ int majority(int *a, int N)
         return *a;
 
     int mj_left = majority(a, N / 2),
-        mj_right = majority(a + (N / 2), N / 2),
+        mj_right = majority(a + (N / 2), N - (N / 2)),
         cnt_left = 0,
         cnt_right = 0;
 
