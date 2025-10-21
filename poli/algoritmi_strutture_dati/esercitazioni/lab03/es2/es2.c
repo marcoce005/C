@@ -330,7 +330,7 @@ int key_less(date d0, date d1)
 {
     int n0 = d0.yyyy * 365 + d0.mm * 31 + d0.dd,
         n1 = d1.yyyy * 365 + d1.mm * 31 + d1.dd;
-    return n0 < n1;
+    return n0 <= n1;
 }
 
 link insert_in_order(link h, item val)
