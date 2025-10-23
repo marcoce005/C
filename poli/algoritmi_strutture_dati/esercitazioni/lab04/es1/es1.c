@@ -30,7 +30,7 @@ int main(void)
 
     printf("\nVertex Cover:\n");
 
-    for (k = 2; k <= G.N; k++)
+    for (k = 1; k <= G.N; k++)
     {
         simple_comb(0, val, sol, G.N, k, 0, G.couples, G.E);
         printf("\n");
