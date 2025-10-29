@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define FILE_PATH "easy_test_set.txt"
+#define FILE_PATH "hard_test_set.txt"
 #define TYPE_OF_STONES 4
 
 typedef enum
@@ -14,22 +14,21 @@ typedef enum
 
 int *get_stones_occ(FILE *fp, char *stones[TYPE_OF_STONES], int *tot);
 stone *init_val(int *occ, int size);
-stone *get_dist(stone *v, int n, int *n_dist, int **mark);
+stone *get_dist(stone *v, int n, int *n_dist);
 void print_arr(void *v, int n, size_t size);
-void comb(int pos, stone *val, stone *sol, int n, int k, int start, int *exit);
-void perm_r(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit);
 int is_promising(stone prec, stone curr);
+void perm_r2(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit, int *max);
 
 int main(void)
 {
     FILE *fp = fopen(FILE_PATH, "r");
-    int n_test, i, k, tot, *occ, exit;
-    stone *val, *sol;
+    int n_test, i, k, tot, *occ, exit, max_len, n_dist;
+    stone *val, *sol, *prec_sol, *dist_val;
     char *stones[TYPE_OF_STONES] = {
         "zaffiro",
-        "rubini",
-        "topazi",
-        "smeraldi"};
+        "rubino",
+        "topazio",
+        "smeraldo"};
 
     if (fp == NULL)
     {
@@ -45,18 +44,17 @@ int main(void)
         printf("TOT = %d\n", tot);
 
         val = init_val(occ, tot);
-
-        for (k = tot; k > 1 && exit == 0; k--)
-        {
-            sol = (stone *)malloc(k * sizeof(stone));
-            exit = 0;
-            comb(0, val, sol, tot, k, 0, &exit);
-            free(sol);
-        }
-
-        printf("Collana massima di lunghezza %d\n", k + 1);
+        max_len = 0;
+        dist_val = get_dist(val, tot, &n_dist);
+        sol = (stone *)malloc(tot * sizeof(stone));
         exit = 0;
 
+        perm_r2(0, dist_val, sol, occ, tot, n_dist, &exit, &max_len);
+
+        printf("Collana massima di lunghezza %d\n", max_len);
+
+        free(dist_val);
+        free(sol);
         free(occ);
         free(val);
     }
@@ -64,53 +62,29 @@ int main(void)
     return 0;
 }
 
-void perm_r(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit)
+void perm_r2(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit, int *max)
 {
     int i;
     if (pos >= n)
     {
-        // print_arr(sol, n, sizeof(stone));
-        // printf("\n");
+        *max = n;
         *exit = 1;
         return;
     }
 
     for (i = 0; i < n_dist && *exit == 0; i++)
     {
-        // print_arr(sol, n, sizeof(int));
-        // printf("\nprec --> %d\tcurr --> %d\tmark[i] --> %d\tpos --> %d\n", sol[pos - 1], dist_val[i], mark[i], pos);
         if (mark[i] > 0 && (pos == 0 || is_promising(sol[pos - 1], dist_val[i])))
         {
             mark[i]--;
             sol[pos] = dist_val[i];
-            perm_r(pos + 1, dist_val, sol, mark, n, n_dist, exit);
+
+            if (pos + 1 > *max)
+                *max = pos + 1;
+
+            perm_r2(pos + 1, dist_val, sol, mark, n, n_dist, exit, max);
             mark[i]++;
         }
-    }
-    return;
-}
-
-void comb(int pos, stone *val, stone *sol, int n, int k, int start, int *exit)
-{
-    int i, j, *mark, n_dist;
-    stone *dist, *sol_perm;
-    if (pos >= k)
-    {
-        sol_perm = (stone *)malloc(k * sizeof(stone));
-        dist = get_dist(sol, k, &n_dist, &mark);
-
-        perm_r(0, dist, sol_perm, mark, k, n_dist, exit);
-
-        free(dist);
-        free(mark);
-        free(sol_perm);
-        return;
-    }
-
-    for (i = start; i < n && *exit == 0; i++)
-    {
-        sol[pos] = val[i];
-        comb(pos + 1, val, sol, n, k, i + 1, exit);
     }
     return;
 }
@@ -131,7 +105,7 @@ int is_promising(stone prec, stone curr)
     }
 }
 
-stone *get_dist(stone *v, int n, int *n_dist, int **mark)
+stone *get_dist(stone *v, int n, int *n_dist)
 {
     int i, *occ = (int *)calloc(n, sizeof(int)), index;
     stone *dist;
@@ -143,13 +117,13 @@ stone *get_dist(stone *v, int n, int *n_dist, int **mark)
             (*n_dist)++;
 
     dist = (stone *)malloc((*n_dist) * sizeof(stone));
-    *mark = (int *)malloc((*n_dist) * sizeof(int));
+    // *mark = (int *)malloc((*n_dist) * sizeof(int));
 
     for (i = 0, index = 0; i < n; i++)
         if (occ[i] > 0)
         {
-            dist[index] = i;
-            (*mark)[index++] = occ[i];
+            dist[index++] = i;
+            // (*mark)[index++] = occ[i];
         }
 
     free(occ);
