@@ -16,8 +16,8 @@ int *get_stones_occ(FILE *fp, char *stones[TYPE_OF_STONES], int *tot);
 stone *init_val(int *occ, int size);
 stone *get_dist(stone *v, int n, int *n_dist);
 void print_arr(void *v, int n, size_t size);
-int is_promising(stone prec, stone curr);
-void perm_r2(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit, int *max);
+int is_promising(stone prec, stone curr, int *mark);
+void perm_r(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit, int *max);
 
 int main(void)
 {
@@ -49,7 +49,7 @@ int main(void)
         sol = (stone *)malloc(tot * sizeof(stone));
         exit = 0;
 
-        perm_r2(0, dist_val, sol, occ, tot, n_dist, &exit, &max_len);
+        perm_r(0, dist_val, sol, occ, tot, n_dist, &exit, &max_len);
 
         printf("Collana massima di lunghezza %d\n", max_len);
 
@@ -62,9 +62,9 @@ int main(void)
     return 0;
 }
 
-void perm_r2(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit, int *max)
+void perm_r(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit, int *max)
 {
-    int i;
+    int i, occ_special, j;
     if (pos >= n)
     {
         *max = n;
@@ -74,33 +74,40 @@ void perm_r2(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist,
 
     for (i = 0; i < n_dist && *exit == 0; i++)
     {
-        if (mark[i] > 0 && (pos == 0 || is_promising(sol[pos - 1], dist_val[i])))
+        if (mark[i] > 0 && (pos == 0 || is_promising(sol[pos - 1], dist_val[i], mark)))
         {
-            mark[i]--;
-            sol[pos] = dist_val[i];
+            // force to put all the 'z' or 's' toghether --> zzzzzz or sssss
 
-            if (pos + 1 > *max)
-                *max = pos + 1;
+            occ_special = (dist_val[i] == z || dist_val[i] == s) ? mark[i] : 1;
 
-            perm_r2(pos + 1, dist_val, sol, mark, n, n_dist, exit, max);
-            mark[i]++;
+            for (j = 0; j < occ_special; j++)
+            {
+                mark[i]--;
+                sol[pos + j] = dist_val[i];
+            }
+
+            if (pos + occ_special > *max)
+                *max = pos + occ_special;
+
+            perm_r(pos + occ_special, dist_val, sol, mark, n, n_dist, exit, max);
+            mark[i] += occ_special;
         }
     }
     return;
 }
 
-int is_promising(stone prec, stone curr)
+int is_promising(stone prec, stone curr, int *mark)
 {
     switch (prec)
     {
     case z:
     case t:
-        return curr == z || curr == r;
+        return (curr == z || curr == r) && (mark[z] + mark[r] > 0);
         break;
 
     case r:
     case s:
-        return curr == s || curr == t;
+        return (curr == s || curr == t) && (mark[s] + mark[t] > 0);
         break;
     }
 }
