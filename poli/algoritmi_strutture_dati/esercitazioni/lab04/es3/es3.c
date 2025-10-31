@@ -58,7 +58,8 @@ int main(void)
         free(occ);
         free(val);
     }
-
+	
+	fclose(fp);
     return 0;
 }
 
