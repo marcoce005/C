@@ -14,7 +14,6 @@ typedef enum
 
 int *get_stones_occ(FILE *fp, char *stones[TYPE_OF_STONES], int *tot);
 stone *init_val(int *occ, int size);
-stone *get_dist(stone *v, int n, int *n_dist);
 void print_arr(void *v, int n, size_t size);
 int is_promising(stone prec, stone curr, int *mark);
 void perm_r(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, int *exit, int *max);
@@ -22,8 +21,8 @@ void perm_r(int pos, stone *dist_val, stone *sol, int *mark, int n, int n_dist, 
 int main(void)
 {
     FILE *fp = fopen(FILE_PATH, "r");
-    int n_test, i, k, tot, *occ, exit, max_len, n_dist;
-    stone *val, *sol, *prec_sol, *dist_val;
+    int n_test, i, tot, *occ, exit, max_len;
+    stone *val, *sol, dist_val[TYPE_OF_STONES];
     char *stones[TYPE_OF_STONES] = {
         "zaffiro",
         "rubino",
@@ -36,6 +35,9 @@ int main(void)
         return 0;
     }
 
+    for (i = 0; i < TYPE_OF_STONES; dist_val[i] = i, i++)
+        ;
+
     fscanf(fp, "%d", &n_test);
     for (i = 0; i < n_test; i++)
     {
@@ -45,15 +47,13 @@ int main(void)
 
         val = init_val(occ, tot);
         max_len = 0;
-        dist_val = get_dist(val, tot, &n_dist);
         sol = (stone *)malloc(tot * sizeof(stone));
         exit = 0;
 
-        perm_r(0, dist_val, sol, occ, tot, n_dist, &exit, &max_len);
+        perm_r(0, dist_val, sol, occ, tot, TYPE_OF_STONES, &exit, &max_len);
 
         printf("Collana massima di lunghezza %d\n", max_len);
 
-        free(dist_val);
         free(sol);
         free(occ);
         free(val);
@@ -110,31 +110,6 @@ int is_promising(stone prec, stone curr, int *mark)
         return (curr == s || curr == t) && (mark[s] + mark[t] > 0);
         break;
     }
-}
-
-stone *get_dist(stone *v, int n, int *n_dist)
-{
-    int i, *occ = (int *)calloc(n, sizeof(int)), index;
-    stone *dist;
-    for (i = 0; i < n; occ[v[i]]++, i++)
-        ;
-
-    for (i = 0, *n_dist = 0; i < n; i++)
-        if (occ[i] > 0)
-            (*n_dist)++;
-
-    dist = (stone *)malloc((*n_dist) * sizeof(stone));
-    // *mark = (int *)malloc((*n_dist) * sizeof(int));
-
-    for (i = 0, index = 0; i < n; i++)
-        if (occ[i] > 0)
-        {
-            dist[index++] = i;
-            // (*mark)[index++] = occ[i];
-        }
-
-    free(occ);
-    return dist;
 }
 
 stone *init_val(int *occ, int size)
