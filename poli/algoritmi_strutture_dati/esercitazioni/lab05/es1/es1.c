@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FILE_PATH "att1.txt"
+#define FILE_PATH "att.txt"
 
 typedef struct
 {
@@ -45,15 +45,7 @@ void comb(int pos, int start, int n, int k, att *sol, att *best_sol, att *val, i
     int i;
 
     if (pos >= k)
-    {
-        if (*hours > *max_hours)
-        {
-            *max_hours = *hours;
-            *len_max = pos;
-            arr_att_copy(best_sol, sol, *len_max);
-        }
         return;
-    }
 
     for (i = start; i < n; i++)
     {
@@ -62,8 +54,21 @@ void comb(int pos, int start, int n, int k, att *sol, att *best_sol, att *val, i
             if (!is_void_att(sol[pos]))
                 *hours -= (sol[pos].fi - sol[pos].si);
 
+            if (!is_void_att(sol[pos + 1]))
+            {
+                *hours -= (sol[pos + 1].fi - sol[pos + 1].si);
+                sol[pos + 1] = void_att();
+            }
+
             *hours += val[i].fi - val[i].si;
             sol[pos] = val[i];
+
+            if (*hours > *max_hours)
+            {
+                *max_hours = *hours;
+                *len_max = pos + 1;
+                arr_att_copy(best_sol, sol, *len_max);
+            }
 
             comb(pos + 1, i + 1, n, k, sol, best_sol, val, len_max, max_hours, hours);
         }
@@ -74,26 +79,21 @@ void comb(int pos, int start, int n, int k, att *sol, att *best_sol, att *val, i
 void attSel(int N, att *V)
 {
     att *sol, *best_sol;
-    int k = N, max_h, h, i, len_max;
+    int max_h, h, i, len_max;
 
     best_sol = (att *)malloc(N * sizeof(att));
+    sol = (att *)malloc(N * sizeof(att));
+    h = len_max = max_h = 0;
 
-    for (len_max = max_h = 0, k = N; k > 0; k--)
-    {
-        h = 0;
-        sol = (att *)malloc(k * sizeof(att));
+    for (i = 0; i < N; sol[i] = void_att(), i++) // init to void
+        ;
 
-        for (i = 0; i < k; sol[i] = void_att(), i++) // init to void
-            ;
-
-        comb(0, 0, N, k, sol, best_sol, V, &len_max, &max_h, &h);
-
-        free(sol);
-    }
+    comb(0, 0, N, N, sol, best_sol, V, &len_max, &max_h, &h);
 
     print_arr_att(best_sol, len_max);
     printf("Durata %d\n", max_h);
 
+    free(sol);
     free(best_sol);
 }
 
