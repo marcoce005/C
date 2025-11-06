@@ -4,7 +4,7 @@
 #define FILE_PATH_TILES "tiles.txt"
 #define FILE_PATH_BOARD "board.txt"
 
-typedef struct // T1 orizontal, T2 vertical
+typedef struct // T1 horizontal, T2 vertical
 {
     char colore_T1, colore_T2;
     int valore_T1, valore_T2, id;
@@ -12,31 +12,37 @@ typedef struct // T1 orizontal, T2 vertical
 
 tile *get_tiles_from_file(int *n_tiles);
 tile *get_board_from_file(tile *t, int **busy, int *r, int *c);
-tile *init_val(tile *t, int n_t, tile *board, int *busy, int n_b, int *n_val);
+tile *init_val(tile *t, int n_t, tile *board, int *busy, int *tot_busy, int n_b, int *n_val);
 tile rot_tile(tile x);
 int is_in_arr(int *v, int n, int x);
 void print_arr(void *v, int n, size_t size);
 void print_board(tile *v, int r, int c);
 void print_tile(tile x);
+void perm(int pos, int n, tile *sol, int r, int c, tile *val, int *mark, int *busy);
 
 int main(void)
 {
-    int n_tiles, r, c, *busy, n_val;
+    int n_tiles, r, c, *busy, n_busy, n_val, *mark;
     tile *tiles = get_tiles_from_file(&n_tiles),
          *board = get_board_from_file(tiles, &busy, &r, &c),
-         *val = init_val(tiles, n_tiles, board, busy, r * c, &n_val);
+         *val = init_val(tiles, n_tiles, board, busy, &n_busy, r * c, &n_val);
+    // print_board(board, r, c);
 
-    print_arr(busy, r * c, sizeof(int));
-    printf("\n\n");
-    print_arr(tiles, n_tiles, sizeof(tile));
-    printf("\n\n");
-    print_arr(val, n_val, sizeof(tile));
+    *mark = (int *)calloc(n_val, sizeof(int));
+
+    perm(0, n_tiles - n_busy, board, r, c, val, mark, busy);
 
     free(tiles);
     free(board);
     free(busy);
     free(val);
+    free(mark);
     return 0;
+}
+
+void perm(int pos, int n, tile *sol, int r, int c, tile *val, int *mark, int *busy)
+{
+    
 }
 
 int is_in_arr(int *v, int n, int x)
@@ -47,16 +53,16 @@ int is_in_arr(int *v, int n, int x)
     return 0;
 }
 
-tile *init_val(tile *t, int n_t, tile *board, int *busy, int n_b, int *n_val)
+tile *init_val(tile *t, int n_t, tile *board, int *busy, int *tot_busy, int n_b, int *n_val)
 {
     tile *val;
-    int tot_busy, i, index;
+    int i, index;
 
-    for (tot_busy = i = 0; i < n_b; i++)
+    for (*tot_busy = i = 0; i < n_b; i++)
         if (busy[i] != -1)
-            tot_busy++;
+            (*tot_busy)++;
 
-    *n_val = (n_t - tot_busy) * 2;
+    *n_val = (n_t - *tot_busy) * 2;
 
     val = (tile *)malloc(*n_val * sizeof(tile));
 
