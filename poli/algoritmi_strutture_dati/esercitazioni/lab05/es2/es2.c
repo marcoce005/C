@@ -14,35 +14,68 @@ tile *get_tiles_from_file(int *n_tiles);
 tile *get_board_from_file(tile *t, int **busy, int *r, int *c);
 tile *init_val(tile *t, int n_t, tile *board, int *busy, int *tot_busy, int n_b, int *n_val);
 tile rot_tile(tile x);
+int *create_free_index_tab(int *busy, int free_cell, int r, int c);
 int is_in_arr(int *v, int n, int x);
 void print_arr(void *v, int n, size_t size);
 void print_board(tile *v, int r, int c);
 void print_tile(tile x);
-void perm(int pos, int n, tile *sol, int r, int c, tile *val, int *mark, int *busy);
+void disp(int pos, int n, int k, tile *sol, int r, int c, tile *val, int *mark, int *busy, int *index_tab);
 
 int main(void)
 {
-    int n_tiles, r, c, *busy, n_busy, n_val, *mark;
+    int n_tiles, r, c, *busy, n_busy, n_val, *mark, *free_index_tab;
     tile *tiles = get_tiles_from_file(&n_tiles),
          *board = get_board_from_file(tiles, &busy, &r, &c),
          *val = init_val(tiles, n_tiles, board, busy, &n_busy, r * c, &n_val);
-    // print_board(board, r, c);
 
-    *mark = (int *)calloc(n_val, sizeof(int));
+    mark = (int *)calloc(n_val, sizeof(int));
+    free_index_tab = create_free_index_tab(busy, (r * c) - n_busy, r, c);
 
-    perm(0, n_tiles - n_busy, board, r, c, val, mark, busy);
+    disp(0, n_val, n_tiles - n_busy, board, r, c, val, mark, busy, free_index_tab);
 
     free(tiles);
     free(board);
     free(busy);
     free(val);
     free(mark);
+    free(free_index_tab);
     return 0;
 }
 
-void perm(int pos, int n, tile *sol, int r, int c, tile *val, int *mark, int *busy)
+void disp(int pos, int n, int k, tile *sol, int r, int c, tile *val, int *mark, int *busy, int *index_tab)
 {
-    
+    int i;
+
+    if (pos >= k)
+    {
+        print_board(sol, r, c);
+        print_arr(busy, r * c, sizeof(int));
+        printf("\n\n");
+        return;
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        if (mark[i] == 0)
+        {
+            mark[i] = 1;
+            sol[index_tab[pos]] = val[i];
+            busy[index_tab[pos]] = val[i].id;
+            disp(pos + 1, n, k, sol, r, c, val, mark, busy, index_tab);
+            mark[i] = 0;
+        }
+    }
+    return;
+}
+
+int *create_free_index_tab(int *busy, int free_cell, int r, int c)
+{
+    int i, index, *v = (int *)malloc(free_cell * sizeof(int));
+
+    for (index = i = 0; i < r * c; i++)
+        if (busy[i] == -1)
+            v[index++] = i;
+    return v;
 }
 
 int is_in_arr(int *v, int n, int x)
