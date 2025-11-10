@@ -59,10 +59,12 @@ void copy_arr(tile *dest, tile *src, int n)
 
 int cal_points(tile *board, int r, int c)
 {
-    int i, j, tot, partial;
-    for (tot = i = 0; i < r * c; i += r + 1)
+    int i, j, tot, partial, start, end;
+    for (tot = i = 0; i < r * c; i += c + 1)
     {
-        for (partial = board[(i / r) * r].valore_T1, j = ((i / r) * r) + 1; j < ((i / r) * r) + r; j++) // search in row
+        start = (i / c) * c;
+        end = ((i / c) * c) + c;
+        for (partial = board[start].valore_T1, j = start + 1; j < end; j++) // search in row
         {
             if (board[j].colore_T1 != board[j - 1].colore_T1)
             {
@@ -72,7 +74,10 @@ int cal_points(tile *board, int r, int c)
             partial += board[j].valore_T1;
         }
         tot += partial;
-        for (partial = board[i % c].valore_T2, j = (i % c) + c; j <= (r - 1) * c + (i % c); j += c) // search in row
+
+        start = i % c;
+        end = (i % c) + ((r - 1) * c);
+        for (partial = board[start].valore_T2, j = start + c; j <= end; j += c) // search in col
         {
             if (board[j].colore_T2 != board[j - c].colore_T2)
             {
