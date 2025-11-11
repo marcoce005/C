@@ -7,7 +7,6 @@ typedef struct stack *Stack;
 
 /**
  * @brief Initialize stack.
- * You can only initilize one stack at the time.
  * @param n_max
  * Maximum number of elements in the stack.
  * @return
