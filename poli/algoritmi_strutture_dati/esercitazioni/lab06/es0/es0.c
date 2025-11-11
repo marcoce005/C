@@ -119,5 +119,6 @@ int *init_val(int *n)
     for (i = 1; i < (*n + 1); fscanf(fp, "%d", v + i), i++)
         ;
 
+	fclose(fp);
     return v;
 }
