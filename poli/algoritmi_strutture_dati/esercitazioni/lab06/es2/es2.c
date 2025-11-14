@@ -13,10 +13,8 @@ typedef enum
 } stone;
 
 int *get_stones_occ(FILE *fp, char *stones[TYPE_OF_STONES], int *tot);
-stone *init_val(int *occ, int size);
 void print_arr(void *v, int n, size_t size);
 void best_cain(int *occ);
-int is_promising(stone prec, stone curr, int *mark);
 int div_imper(stone start, int *occ, int possible_stone, int **known, int max_occ);
 int max(int *v, int n);
 int cal_index_col(int *occ, int max_occ);
@@ -24,8 +22,7 @@ int cal_index_col(int *occ, int max_occ);
 int main(void)
 {
     FILE *fp = fopen(FILE_PATH, "r");
-    int n_test, i, tot, *occ, exit, max_len;
-    stone *val, *sol, dist_val[TYPE_OF_STONES];
+    int n_test, i, tot, *occ;
     char *stones[TYPE_OF_STONES] = {
         "zaffiro",
         "rubino",
@@ -38,9 +35,6 @@ int main(void)
         return 0;
     }
 
-    for (i = 0; i < TYPE_OF_STONES; dist_val[i] = i, i++)
-        ;
-
     fscanf(fp, "%d", &n_test);
     for (i = 0; i < n_test; i++)
     {
@@ -48,16 +42,9 @@ int main(void)
         occ = get_stones_occ(fp, stones, &tot);
         printf("TOT = %d\n", tot);
 
-        val = init_val(occ, tot);
-        max_len = 0;
-        sol = (stone *)malloc(tot * sizeof(stone));
-        exit = 0;
-
         best_cain(occ);
 
-        free(sol);
         free(occ);
-        free(val);
     }
 
     fclose(fp);
@@ -207,32 +194,6 @@ int div_imper(stone start, int *occ, int possible_stone, int **known, int max_oc
         break;
     }
     return max(l, 2);
-}
-
-int is_promising(stone prec, stone curr, int *mark)
-{
-    switch (prec)
-    {
-    case z:
-    case t:
-        return (curr == z || curr == r) && (mark[z] + mark[r] > 0);
-        break;
-
-    case r:
-    case s:
-        return (curr == s || curr == t) && (mark[s] + mark[t] > 0);
-        break;
-    }
-}
-
-stone *init_val(int *occ, int size)
-{
-    int i, j, cnt = 0;
-    stone *v = (stone *)malloc(size * sizeof(stone));
-    for (i = 0; i < TYPE_OF_STONES; i++)
-        for (j = 0; j < occ[i]; v[cnt++] = i, j++)
-            ;
-    return v;
 }
 
 void print_arr(void *v, int n, size_t size)
