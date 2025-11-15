@@ -94,45 +94,51 @@ tabPg_t get_characters(char *path)
     return tab;
 }
 
-void add_obj_2_equip(obj val_p, pg character)
+void add_obj_2_equip(obj object_p, pg character_p)
 {
-    if (character->equip.inUso == MAX_OBJ)
-        printf("\nYou can't add object to equipment, it's full.\n");
+    if (character_p->equip.inUso == MAX_OBJ)
+        printf("\nYou can't add object if equipment it's full.\n");
     else
     {
-        character->equip.vettEq[character->equip.inUso] = val_p;
-        character->equip.inUso++;
+        character_p->equip.vettEq[character_p->equip.inUso] = object_p;
+        character_p->equip.inUso++;
     }
 }
 
-void remove_obj_2_equip(obj object, pg character)
+void remove_obj_2_equip(obj object_p, pg character_p)
 {
     int i, new_index;
-    for (i = new_index = 0; i < character->equip.inUso; i++)
-        if (character->equip.vettEq[i] != object)
-            character->equip.vettEq[new_index++] = character->equip.vettEq[i];
-        else
-            character->equip.inUso--;
+
+    if (character_p->equip.inUso == 0)
+        printf("\nYou can't remove object if the equipment it's empty.\n");
+    else
+    {
+        for (i = new_index = 0; i < character_p->equip.inUso; i++)
+            if (character_p->equip.vettEq[i] != object_p)
+                character_p->equip.vettEq[new_index++] = character_p->equip.vettEq[i];
+            else
+                character_p->equip.inUso--;
+    }
 }
 
-void print_character(pg x)
+void print_character(pg character_p)
 {
-    if (x == NULL)
+    if (character_p == NULL)
         printf("\nCharacter not found\n");
     else
     {
-        printf("\nCod: %s\t\tName: %s\t\tClass: %s\n", x->codice, x->nome, x->classe);
-        printf("hp: %d\n", x->stat.hp);
-        printf("mp: %d\n", x->stat.mp);
-        printf("atk: %d\n", x->stat.atk);
-        printf("def: %d\n", x->stat.def);
-        printf("mag: %d\n", x->stat.mag);
-        printf("spr: %d\nEquip [n-objects: %d]:\n", x->stat.spr, x->equip.inUso);
+        printf("\nCod: %s\t\tName: %s\t\tClass: %s\n", character_p->codice, character_p->nome, character_p->classe);
+        printf("hp: %d\n", character_p->stat.hp);
+        printf("mp: %d\n", character_p->stat.mp);
+        printf("atk: %d\n", character_p->stat.atk);
+        printf("def: %d\n", character_p->stat.def);
+        printf("mag: %d\n", character_p->stat.mag);
+        printf("spr: %d\nEquip [n-objects: %d]:\n", character_p->stat.spr, character_p->equip.inUso);
 
-        for (int i = 0; i < x->equip.inUso; i++)
+        for (int i = 0; i < character_p->equip.inUso; i++)
         {
             printf(" - ");
-            print_obj(x->equip.vettEq[i]);
+            print_obj(character_p->equip.vettEq[i]);
         }
     }
 }
@@ -162,6 +168,7 @@ void remove_character(tabPg_t tab, char *code)
                 else
                     p->next = x->next;
                 free(x);
+                (tab->nPg)--;
                 return;
             }
     }
@@ -192,4 +199,23 @@ void insert_character(tabPg_t tab)
     scanf("%d", &val.stat.spr);
 
     list_ins(&(tab->headPg), &(tab->tailPg), val);
+    (tab->nPg)++;
+}
+
+void cal_statistics(pg character_p)
+{
+    struct Pg tmp = *character_p;
+    stat_t stat;
+
+    for (int i = 0; i < character_p->equip.inUso; i++)
+    {
+        stat = *get_object_stat(character_p->equip.vettEq[i]);
+        tmp.stat.hp = (tmp.stat.hp + stat.hp <= 0) ? 0 : (tmp.stat.hp + stat.hp);
+        tmp.stat.mp = (tmp.stat.mp + stat.mp <= 0) ? 0 : (tmp.stat.mp + stat.mp);
+        tmp.stat.atk = (tmp.stat.atk + stat.atk <= 0) ? 0 : (tmp.stat.atk + stat.atk);
+        tmp.stat.def = (tmp.stat.def + stat.def <= 0) ? 0 : (tmp.stat.def + stat.def);
+        tmp.stat.mag = (tmp.stat.mag + stat.mag <= 0) ? 0 : (tmp.stat.mag + stat.mag);
+        tmp.stat.spr = (tmp.stat.spr + stat.spr <= 0) ? 0 : (tmp.stat.spr + stat.spr);
+    }
+    print_character(&(tmp));
 }

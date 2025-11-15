@@ -4,13 +4,17 @@
 #include "inventory.h"
 
 #define MAX_LEN_STR 50 + 1
-#define MAX_STAT 6
+
+typedef struct Stat
+{
+    int hp, mp, atk, def, mag, spr;
+} stat_t;
 
 struct Obj
 {
     char nome[MAX_LEN_STR],
         tipo[MAX_LEN_STR];
-    int stat[MAX_STAT];
+    stat_t stat;
 };
 
 struct inv_t
@@ -20,6 +24,11 @@ struct inv_t
         maxInv;
 };
 
+stat_p get_object_stat(obj object_p)
+{
+    return &(object_p->stat);
+}
+
 obj search_obj_by_name(tabInv_t tab, char *name)
 {
     for (int i = 0; i < tab->maxInv; i++)
@@ -28,16 +37,19 @@ obj search_obj_by_name(tabInv_t tab, char *name)
     return NULL;
 }
 
-void print_obj(obj x)
+void print_obj(obj object_p)
 {
-    if (x == NULL)
+    if (object_p == NULL)
         printf("\nObject not found\n");
     else
     {
-        printf("Name: %s\t\tType: %s\t\tStat: ", x->nome, x->tipo);
-        for (int i = 0; i < MAX_STAT; printf("%d ", x->stat[i]), i++)
-            ;
-        printf("\n");
+        printf("Name: %s\t\tType: %s\t\tStat: {", object_p->nome, object_p->tipo);
+        printf("hp: %d,  ", object_p->stat.hp);
+        printf("mp: %d,  ", object_p->stat.mp);
+        printf("atk: %d,  ", object_p->stat.atk);
+        printf("def: %d,  ", object_p->stat.def);
+        printf("mag: %d,  ", object_p->stat.mag);
+        printf("spr: %d}\n", object_p->stat.spr);
     }
 }
 
@@ -45,7 +57,6 @@ tabInv_t get_inventory(char *path)
 {
     FILE *fp = fopen(path, "r");
     tabInv_t tab = (tabInv_t)malloc(sizeof(*tab));
-    int i, j;
 
     if (fp == NULL)
     {
@@ -58,11 +69,17 @@ tabInv_t get_inventory(char *path)
     tab->nInv = tab->maxInv;
     tab->vettInv = (struct Obj *)malloc(tab->maxInv * sizeof(struct Obj));
 
-    for (i = 0; i < tab->maxInv; i++)
+    for (int i = 0; i < tab->maxInv; i++)
     {
-        fscanf(fp, "%s %s", (tab->vettInv)[i].nome, (tab->vettInv)[i].tipo);
-        for (j = 0; j < MAX_STAT; fscanf(fp, "%d", &((tab->vettInv)[i].stat[j])), j++)
-            ;
+        fscanf(fp, "%s %s %d %d %d %d %d %d",
+               (tab->vettInv)[i].nome,
+               (tab->vettInv)[i].tipo,
+               &(tab->vettInv[i].stat.hp),
+               &(tab->vettInv[i].stat.mp),
+               &(tab->vettInv[i].stat.atk),
+               &(tab->vettInv[i].stat.def),
+               &(tab->vettInv[i].stat.mag),
+               &(tab->vettInv[i].stat.spr));
     }
 
     fclose(fp);
