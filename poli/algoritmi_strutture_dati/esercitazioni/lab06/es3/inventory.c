@@ -85,3 +85,8 @@ tabInv_t get_inventory(char *path)
     fclose(fp);
     return tab;
 }
+
+void free_inventory(tabInv_t tab) {
+    free(tab->vettInv);
+    free(tab);
+}

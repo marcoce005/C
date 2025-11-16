@@ -14,5 +14,6 @@ void remove_obj_2_equip(obj object_p, pg character_p);
 void insert_character(tabPg_t tab);
 void remove_character(tabPg_t tab, char *code);
 void cal_statistics(pg character_p);
+void free_characters(tabPg_t tab);
 
 #endif

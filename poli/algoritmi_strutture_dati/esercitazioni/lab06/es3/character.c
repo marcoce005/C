@@ -219,3 +219,15 @@ void cal_statistics(pg character_p)
     }
     print_character(&(tmp));
 }
+
+static void free_list_r(link h) {
+    if (h == NULL)
+        return;
+    free_list_r(h->next);
+    free(h);
+}
+
+void free_characters(tabPg_t tab) {
+    free_list_r(tab->headPg);
+    free(tab);
+}
