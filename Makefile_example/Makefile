@@ -4,7 +4,7 @@ all: run
 TARGET = main.out
 
 # File sorgenti e oggetto
-SRC = main.c lib.c
+SRC = $(shell find ./ -maxdepth 1 -type f -name "*.c")
 OBJ = $(SRC:.c=.o)
 
 # Compilatore e flag
