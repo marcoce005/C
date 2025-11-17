@@ -48,6 +48,7 @@ int main(int argc, char **argv)
   fin = fopen("pg.txt", "r");
   pgList_read(fin, pgList);
   fclose(fin);
+
 #if DBG
   pgList_print(stdout, pgList);
 #endif /* DBG */
@@ -55,12 +56,12 @@ int main(int argc, char **argv)
   fin = fopen("inventario.txt", "r");
   invArray_read(fin, invArray);
   fclose(fin);
+
 #if DBG
   invArray_print(stdout, invArray);
 #endif /* DBG */
 
   fineProgramma = falso;
-
   do
   {
     stampaMenu(scelte, &selezione);
@@ -136,6 +137,7 @@ int main(int argc, char **argv)
   } while (!fineProgramma);
 
   pgList_free(pgList);
+  invArray_free(invArray);
 
   return 0;
 }
