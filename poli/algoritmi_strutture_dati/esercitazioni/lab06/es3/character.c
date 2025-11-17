@@ -156,15 +156,22 @@ pg search_character_by_code(tabPg_t tab, char *code)
 void remove_character(tabPg_t tab, char *code)
 {
     link x, p;
-    if (tab->headPg == NULL)
+    if (tab->nPg == 0)
         printf("\nRemove error: empty list of character\n");
     else
     {
         for (x = tab->headPg, p = NULL; x != NULL; p = x, x = x->next)
             if (strcmp(x->pg.codice, code) == 0)
             {
-                if (x == tab->headPg)
+                if (tab->headPg == tab->tailPg)
+                    tab->headPg = tab->tailPg = NULL;
+                else if (x == tab->headPg)
                     tab->headPg = x->next;
+                else if (x == tab->tailPg)
+                {
+                    tab->tailPg = p;
+                    p->next = NULL;
+                }
                 else
                     p->next = x->next;
                 free(x);
@@ -220,14 +227,16 @@ void cal_statistics(pg character_p)
     print_character(&(tmp));
 }
 
-static void free_list_r(link h) {
+static void free_list_r(link h)
+{
     if (h == NULL)
         return;
     free_list_r(h->next);
     free(h);
 }
 
-void free_characters(tabPg_t tab) {
+void free_characters(tabPg_t tab)
+{
     free_list_r(tab->headPg);
     free(tab);
 }
