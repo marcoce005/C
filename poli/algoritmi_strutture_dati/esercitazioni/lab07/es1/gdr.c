@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   fin = fopen("inventario.txt", "r");
   invArray_read(fin, invArray);
   fclose(fin);
-
+  
 #if DBG
   invArray_print(stdout, invArray);
 #endif /* DBG */

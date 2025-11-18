@@ -13,7 +13,7 @@ void stat_read(FILE *fp, stat_t *statp)
 
 void stat_print(FILE *fp, stat_t *statp, int soglia)
 {
-    fprintf(fp, "Stat: {hp: %4d, ", soglia != INT_MAX && statp->hp < soglia ? soglia : statp->hp);
+    fprintf(fp, "{hp: %4d, ", soglia != INT_MAX && statp->hp < soglia ? soglia : statp->hp);
     fprintf(fp, "mp: %4d, ", soglia != INT_MAX && statp->mp < soglia ? soglia : statp->mp);
     fprintf(fp, "atk: %4d, ", soglia != INT_MAX && statp->atk < soglia ? soglia : statp->atk);
     fprintf(fp, "def: %4d, ", soglia != INT_MAX && statp->def < soglia ? soglia : statp->def);
@@ -29,7 +29,7 @@ void inv_read(FILE *fp, inv_t *invp)
 
 void inv_print(FILE *fp, inv_t *invp)
 {
-    fprintf(fp, "Name: %-10s\t\tType: %-10s\t\t", invp->nome, invp->tipo);
+    fprintf(fp, "Name: %-10s\t\tType: %-10s\t\tStat: ", invp->nome, invp->tipo);
     stat_print(fp, &(invp->stat), INT_MAX); // stampa senza soglia
 }
 
