@@ -6,6 +6,7 @@ int pg_read(FILE *fp, pg_t *pgp)
     {
         stat_read(fp, &(pgp->b_stat));
         pgp->eq_stat = pgp->b_stat;
+        pgp->equip = equipArray_init();
         return 1;
     }
     return 0;
@@ -34,5 +35,5 @@ void pg_print(FILE *fp, pg_t *pgp, invArray_t invArray)
 }
 
 void pg_updateEquip(pg_t *pgp, invArray_t invArray) { 
-    equipArray_update(pgp->equip, invArray); 
+    equipArray_update(pgp->equip, invArray, &(pgp->eq_stat)); 
 }
