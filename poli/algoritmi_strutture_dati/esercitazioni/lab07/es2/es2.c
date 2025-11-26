@@ -75,56 +75,6 @@ int main(void)
     float max_point, *diag_val, *prog_val;
     val = init_val(n_elements);
 
-    // sol = (int *)malloc(MAX_ELEMENTS_FOR_DIAGONAL * sizeof(int));
-    // acro_f = (int *)calloc(MAX_ELEMENTS_FOR_DIAGONAL, sizeof(int));
-    // acro_b = (int *)calloc(MAX_ELEMENTS_FOR_DIAGONAL, sizeof(int));
-    // acro_seq = (int *)calloc(MAX_ELEMENTS_FOR_DIAGONAL, sizeof(int));
-    // DD_values = (int *)calloc(MAX_ELEMENTS_FOR_DIAGONAL, sizeof(int));
-    // diag_val = (float *)calloc(MAX_ELEMENTS_FOR_DIAGONAL, sizeof(float));
-
-    // dim_diag = 1000;
-    // index_diag = 0;
-    // possible_diag = (diag_t *)malloc(dim_diag * sizeof(diag_t));
-
-    // diag_disp_r(0, val, elements, sol, n_elements, MAX_ELEMENTS_FOR_DIAGONAL, acro_f, acro_b, acro_seq, tests[0][0], DD_values, &possible_diag, &dim_diag, &index_diag, diag_val);
-
-    // free(acro_f);
-    // free(acro_b);
-    // free(acro_seq);
-    // free(DD_values);
-    // free(diag_val);
-    // free(sol);
-
-    // val_prog = init_val(index_diag);
-    // sol_prog = (int *)malloc(MAX_DIAGS_FOR_PROGRAM * sizeof(int));
-    // best_sol_prog = (int *)malloc(MAX_DIAGS_FOR_PROGRAM * sizeof(int));
-    // DP_values = (int *)calloc(MAX_DIAGS_FOR_PROGRAM, sizeof(int));
-    // prog_val = (float *)calloc(MAX_DIAGS_FOR_PROGRAM, sizeof(float));
-    // max_point = 0.0;
-
-    // program_disp_r(0, val_prog, possible_diag, elements, sol_prog, best_sol_prog, index_diag, MAX_DIAGS_FOR_PROGRAM, DP_values, tests[0][1], &max_point, prog_val);
-
-    // printf("TOT = %.3f\n", max_point);
-    // for (i = 0; i < MAX_DIAGS_FOR_PROGRAM; i++)
-    // {
-    //     diag_t x = possible_diag[best_sol_prog[i]];
-
-    //     printf("DIAG #%d > %.3f", i + 1, x.value);
-    //     if (i == MAX_DIAGS_FOR_PROGRAM - 1 && elements[x.arr_elems[x.n_elem - 1]].difficulty >= 8)
-    //         printf(" * 1.5 (BONUS)");
-    //     printf("\n");
-    //     for (j = 0; j < possible_diag[best_sol_prog[i]].n_elem; j++)
-    //         printf("%s ", elements[possible_diag[best_sol_prog[i]].arr_elems[j]].name);
-    //     printf("\n");
-    // }
-
-    // free(prog_val);
-    // free(val_prog);
-    // free(DP_values);
-    // free_possible_diag(possible_diag, index_diag);
-    // free(best_sol_prog);
-    // free(sol_prog);
-
     for (i = 0; i < N_TEST; i++)
     {
         printf("--- Test Case #%d ---\n", i + 1);
@@ -225,8 +175,6 @@ void program_disp_r(int pos, int *val, diag_t *diags, element_t *elems, int *sol
         if (prog_val[pos - 1] > *max_point)
         {
             *max_point = prog_val[pos - 1];
-            // print_arr(sol, pos, sizeof(int), TYPE_INT);
-            // printf("\n");
             memcpy(best_sol, sol, MAX_DIAGS_FOR_PROGRAM * sizeof(int));
         }
         return;
@@ -311,13 +259,8 @@ void diag_disp_r(int pos, int *val, element_t *elems, int *sol, int n, int k, in
             diag_val[pos] = elems[val[i]].value + (pos > 0 ? diag_val[pos - 1] : 0);
 
             if (pos < k && acro_front[pos] + acro_back[pos] > 0)
-            {
-                // print_arr(sol, pos + 1, sizeof(int), TYPE_INT);
-                // printf("\t-->\t");
-                // print_arr(diag_val, pos + 1, sizeof(float), TYPE_FLOAT);
-                // printf("\n");
                 ins_diag(possible_diags, dim_diag, index_diag, sol, pos + 1, acro_front[pos], acro_back[pos], acro_seq[pos], DD_values[pos], diag_val[pos]);
-            }
+
             diag_disp_r(pos + 1, val, elems, sol, n, k, acro_front, acro_back, acro_seq, max_DD, DD_values, possible_diags, dim_diag, index_diag, diag_val);
         }
     }
