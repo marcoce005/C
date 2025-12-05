@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     while (!exit)
     {
         printf("\nSelect the action:\n");
-        printf(" - 'vertex' [print all vertex in alphabetic order and thier connected edges]\n");
+        printf(" - 'vertex' [print all vertices in alphabetic order and thier connected edges]\n");
         printf(" - 'adjacency' [check adjacency of 3 vertex and the possibilty of a sub-graph]\n");
         printf(" - 'list' [generate the adjacency list]\n");
         printf(" - 'quit' [stop the program]\n--> ");
@@ -58,11 +58,11 @@ int main(int argc, char **argv)
         switch (type)
         {
         case vertex:
-            /* code */
+            Graph_print_vertex(g);
             break;
 
         case adjacency:
-            /* code */
+            Graph_check_adjacency_beetwen_3_vertex(g);
             break;
 
         case list:

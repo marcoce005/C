@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "graph.h"
 #include "ST.h"
@@ -103,40 +104,6 @@ static edge_t Edge_create(int v, int w, int wt)
     return x;
 }
 
-// static void print_mat(int **m, int r, int c)
-// {
-//     int i, j;
-//     printf("\t");
-//     for (i = 0; i < r; i++)
-//         printf("%3d ", i);
-//     printf("\n\n");
-//     for (i = 0; i < r; i++)
-//     {
-//         printf("%d\t", i);
-//         for (j = 0; j < c; j++)
-//             printf("%3d ", m[i][j]);
-//         printf("\n");
-//     }
-// }
-
-// static void print_list(link h)
-// {
-//     if (h == NULL)
-//         return;
-//     printf("%d/%d ", h->v, h->wt);
-//     print_list(h->next);
-// }
-
-// static void print_lists(graph_t g)
-// {
-//     for (int i = 0; i < g->V; i++)
-//     {
-//         printf("%d --> ", i);
-//         print_list(g->vet_lists[i]);
-//         printf("\n");
-//     }
-// }
-
 static void Edge_insert(graph_t g, edge_t e)
 {
     if (g->mat_adj[e.v][e.w] == 0)
@@ -212,4 +179,153 @@ void Graph_create_list_adjacency(graph_t g)
         for (j = i; j < g->V; j++)
             if (g->mat_adj[i][j] != VOID_WEIGHT)
                 list_ins_edge(g, Edge_create(i, j, g->mat_adj[i][j]));
+}
+
+static int compare_computer_id(graph_t g, void *a, void *b) { return strcmp((*(computer_t *)a).id, (*(computer_t *)b).id); }
+
+static int compare_edge_id(graph_t g, void *a, void *b)
+{
+    char *x = strdup((ST_search_by_index(g->tab, (*((edge_t *)a)).w)).id),
+         *y = strdup((ST_search_by_index(g->tab, (*((edge_t *)b)).w)).id);
+    int ans = strcmp(x, y);
+
+    free(x);
+    free(y);
+    return ans;
+}
+
+static void merge(void *v, void *b, int l, int r, int m, size_t size, int (*compare)(graph_t, void *, void *), graph_t g)
+{
+    int i, j, k;
+    for (i = k = l, j = m + 1; k <= r; k++)
+    {
+        if (i > m)
+            memcpy(b + k * size, v + (j++ * size), size);
+        else if (j > r)
+            memcpy(b + k * size, v + (i++ * size), size);
+        else if (compare(g, v + i * size, v + j * size) <= 0)
+            memcpy(b + k * size, v + (i++ * size), size);
+        else
+            memcpy(b + k * size, v + (j++ * size), size);
+    }
+    for (k = l; k <= r; k++)
+        memcpy(v + k * size, b + k * size, size);
+}
+
+static void merge_sort_r(void *v, void *b, int l, int r, size_t size, int (*compare)(graph_t, void *, void *), graph_t g)
+{
+    if (l >= r)
+        return;
+
+    int m = (l + r) / 2;
+    merge_sort_r(v, b, l, m, size, compare, g);
+    merge_sort_r(v, b, m + 1, r, size, compare, g);
+    merge(v, b, l, r, m, size, compare, g);
+}
+
+static void merge_sort(void *v, int n, size_t size, int (*compare)(graph_t, void *, void *), graph_t g)
+{
+    void *b = (void *)malloc(n * size);
+    merge_sort_r(v, b, 0, n - 1, size, compare, g);
+    free(b);
+}
+
+static edge_t *get_edges(int **m, int r, int c, int vertex, int *n_edges)
+{
+    int i;
+    edge_t *v = (edge_t *)malloc(c * sizeof(edge_t));
+
+    for (i = 0, *n_edges = 0; i < c; i++)
+        if (m[vertex][i] != VOID_WEIGHT)
+            v[(*n_edges)++] = Edge_create(vertex, i, m[vertex][i]);
+    return v;
+}
+
+void Graph_print_vertex(graph_t g)
+{
+    int i, j, n_edges;
+    computer_t vertex[g->V];
+    edge_t *edges;
+
+    for (i = 0; i < g->V; vertex[i] = ST_search_by_index(g->tab, i), i++) // fill with vertex
+        ;
+    merge_sort(vertex, g->V, sizeof(vertex[0]), compare_computer_id, g);
+
+    printf("%10s [%s]\t-->\t%s\n\n", "ID", "Net", "Edges spec. with weight");
+    for (i = 0; i < g->V; i++)
+    {
+        printf("%10s [%s]\t-->\t", vertex[i].id, vertex[i].net);
+
+        edges = get_edges(g->mat_adj, g->V, g->V, ST_search_by_computer_id(g->tab, vertex[i].id), &n_edges);
+        merge_sort(edges, n_edges, sizeof(edges[0]), compare_edge_id, g);
+
+        for (j = 0; j < n_edges; j++)
+            printf("%10s [%s](%3d)\t", ST_search_by_index(g->tab, edges[j].w).id, ST_search_by_index(g->tab, edges[j].w).net, edges[j].wt);
+        printf("\n");
+
+        free(edges);
+    }
+}
+
+static int are_connected_with_matrix(graph_t g, int v, int w)
+{
+    if (v == -1 || w == -1)
+        return 0;
+    return g->mat_adj[v][w] != VOID_WEIGHT;
+}
+
+static int search_in_list(link h, int k)
+{
+    if (h == NULL)
+        return 0;
+    if (h->v == k)
+        return 1;
+    return search_in_list(h->next, k);
+}
+
+static int are_connected_with_list(graph_t g, int v, int w) { return search_in_list(g->vet_lists[v], w); }
+
+static int check_sub_graph(graph_t g, char **vertices, int n, int (*are_connected)(graph_t, int, int))
+{
+    int i, j;
+    for (i = 0; i < n - 1; i++)
+        for (j = i + 1; j < n; j++)
+            if (!are_connected(g, ST_search_by_computer_id(g->tab, vertices[i]), ST_search_by_computer_id(g->tab, vertices[j])))
+                return 0;
+    return 1;
+}
+
+void Graph_check_adjacency_beetwen_3_vertex(graph_t g)
+{
+    int type, ans, n_vertex = 3;
+    char buf[128],
+        **vertices = (char **)malloc(n_vertex * sizeof(char *));
+
+    printf("\nSelected the method:\n - 0 [using matrix]\n - 1 [using list]\n--> ");
+    scanf("%d", &type);
+
+    if (type && g->vet_lists == NULL)
+    {
+        printf("\nYou have to create list before use it.\n");
+        return;
+    }
+
+    printf("\nInsert the vertex IDs:\n");
+    for (int i = 0; i < n_vertex; i++)
+    {
+        printf("--> ");
+        scanf("%s", buf);
+        vertices[i] = strdup(buf);
+    }
+
+    ans = check_sub_graph(g, vertices, 3, type ? are_connected_with_list : are_connected_with_matrix);
+
+    if (ans)
+        printf("\nExist a sub-graph.\n");
+    else
+        printf("\nNot exist a sub-graph.\n");
+
+    for (int i = 0; i < n_vertex; i++)
+        free(vertices[i]);
+    free(vertices);
 }
