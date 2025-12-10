@@ -98,9 +98,11 @@ static link list_ins(link h, char *code, int transaction)
     return h;
 }
 
-Stock_list Stock_list_get_from_file(FILE *fp_in)
+Stock_list Stock_list_get_from_file(Stock_list l, FILE *fp_in)
 {
-    Stock_list l = Stock_list_init();
+    if (l == NULL)
+        l = Stock_list_init();
+
     char buf[STOCK_COD_LEN];
     int i, j, n, *arr_values, *arr_qty;
     datetime_t *arr_date;
@@ -110,7 +112,11 @@ Stock_list Stock_list_get_from_file(FILE *fp_in)
     for (i = 0; i < l->n; i++)
     {
         fscanf(fp_in, "%s %d", buf, &n);
-        l->head = list_ins(l->head, buf, n);
+
+        if (Stock_list_search_by_code(l, buf) == NULL)
+            l->head = list_ins(l->head, buf, n);
+        else
+            Stock_list_search_by_code(l, buf)->n_transaction += n;
 
         arr_date = (datetime_t *)malloc(n * sizeof(datetime_t));
         arr_values = (int *)malloc(n * sizeof(int));
@@ -192,4 +198,14 @@ void Stock_search_min_max_quotations_beetwen_dates(Stock s, char *d0, char *d1)
         d_max = tmp;
     }
     Prices_BST_min_max_beetwen_dates(s->quotations, d_min, d_max);
+}
+
+void Stock_balance_BST(Stock s, int S)
+{
+    if (s == NULL)
+    {
+        Stock_print(s);
+        return;
+    }
+    Prices_BST_balance(s->quotations, S);
 }

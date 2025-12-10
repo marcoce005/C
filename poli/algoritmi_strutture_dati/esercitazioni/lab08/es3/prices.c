@@ -160,3 +160,95 @@ void Prices_BST_min_max_beetwen_dates(Prices p, datetime_t d_min, datetime_t d_m
     else
         printf("\nMin quotation --> %.2f\nMax quotation --> %.2f\n", min, max);
 }
+
+static void BST_max_path(link h, int pos, int *min_depth, int *max_depth)
+{
+    if (h == NULL)
+        return;
+
+    if (h->l == NULL && h->r == NULL)
+    {
+        if (pos > *max_depth)
+            *max_depth = pos;
+        if (pos < *min_depth)
+            *min_depth = pos;
+    }
+
+    BST_max_path(h->l, pos + 1, min_depth, max_depth);
+    BST_max_path(h->r, pos + 1, min_depth, max_depth);
+}
+
+static link BST_rot_right(link h)
+{
+    link x = h->l;
+    h->l = x->r;
+    x->r = h;
+    x->n = h->n;
+    h->n = 1 + (h->l != NULL ? h->l->n : 0) + (h->r != NULL ? h->r->n : 0);
+    return x;
+}
+
+static link BST_rot_left(link h)
+{
+    link x = h->r;
+    h->r = x->l;
+    x->l = h;
+    h->n = 1 + (h->l != NULL ? h->l->n : 0) + (h->r != NULL ? h->r->n : 0);
+    return x;
+}
+
+static link BST_partition(link h, int r)
+{
+    int t = h->l != NULL ? h->l->n : 0;
+
+    if (t > r)
+    {
+        h->l = BST_partition(h->l, r);
+        h = BST_rot_right(h);
+    }
+
+    if (t < r)
+    {
+        h->r = BST_partition(h->r, r - t - 1);
+        h = BST_rot_left(h);
+    }
+
+    return h;
+}
+
+static link BST_balance(link h)
+{
+    if (h == NULL)
+        return NULL;
+
+    int r = ((h->n + 1) / 2) - 1;
+    h = BST_partition(h, r);
+    h->l = BST_balance(h->l);
+    h->r = BST_balance(h->r);
+
+    return h;
+}
+
+void Prices_BST_balance(Prices p, int S)
+{
+    if (p->root->l == NULL && p->root->r == NULL)
+    {
+        printf("\nBST already balance.\n");
+        return;
+    }
+
+    int min = INT_MAX,
+        max = -1;
+
+    BST_max_path(p->root, 0, &min, &max);
+
+    printf("min --> %d\nmax --> %d\n", min, max);
+
+    if (max / (float)min <= (float)S)
+    {
+        printf("\nBST already balance.\n");
+        return;
+    }
+
+    p->root = BST_balance(p->root);
+}

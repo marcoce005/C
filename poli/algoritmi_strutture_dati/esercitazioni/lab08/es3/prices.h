@@ -25,4 +25,6 @@ float Prices_BST_search(Prices p, datetime_t date);
 
 void Prices_BST_min_max_beetwen_dates(Prices p, datetime_t d_min, datetime_t d_max);
 
+void Prices_BST_balance(Prices p, int S);
+
 #endif

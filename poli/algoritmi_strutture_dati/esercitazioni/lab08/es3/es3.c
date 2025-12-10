@@ -18,7 +18,7 @@ int main(void)
 {
     FILE *fp = NULL;
     char buf[BUF_SIZE], buf1[BUF_SIZE];
-    int exit = 0;
+    int exit = 0, input;
     command_t action;
     Stock_list stocks = NULL;
     Stock selected;
@@ -47,7 +47,7 @@ int main(void)
                 break;
             }
 
-            stocks = Stock_list_get_from_file(fp);
+            stocks = Stock_list_get_from_file(stocks, fp);
             fclose(fp);
             break;
 
@@ -83,6 +83,9 @@ int main(void)
             printf("\nInsert stock's code:\n--> ");
             scanf("%s", buf);
             selected = Stock_list_search_by_code(stocks, buf);
+            printf("\nInsert the threshold:\n--> ");
+            scanf("%d", &input);
+            Stock_balance_BST(selected, input);
             break;
 
         case quit:
