@@ -19,4 +19,10 @@ void Prices_BST_fill(Prices p, datetime_t *dates, int *values, int *qtys, int n)
 
 void Prices_BST_ins(Prices p, price_t item);
 
+void Prices_BST_print(Prices p);
+
+float Prices_BST_search(Prices p, datetime_t date);
+
+void Prices_BST_min_max_beetwen_dates(Prices p, datetime_t d_min, datetime_t d_max);
+
 #endif

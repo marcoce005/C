@@ -17,7 +17,14 @@ typedef struct
  * @param fp_in
  * @return * datetime_t
  */
-datetime_t init_datetime(FILE *fp_in);
+datetime_t datetime_from_file(FILE *fp_in);
+
+/**
+ * @brief Get the first date in a string
+ * @param fp_in
+ * @return * datetime_t
+ */
+datetime_t datetime_from_str(char *str);
 
 /**
  * @brief

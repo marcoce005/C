@@ -16,8 +16,12 @@ Stock_list Stock_list_init(void);
 
 void Stock_list_free(Stock_list l);
 
-Stock_list Stock_get_from_file(FILE *fp_in);
+Stock_list Stock_list_get_from_file(FILE *fp_in);
 
-Stock Stock_search_by_code(Stock_list l, char *code);
+Stock Stock_list_search_by_code(Stock_list l, char *code);
+
+void Stock_search_quotation(Stock s, char *date);
+
+void Stock_search_min_max_quotations_beetwen_dates(Stock s, char *d0, char *d1);
 
 #endif

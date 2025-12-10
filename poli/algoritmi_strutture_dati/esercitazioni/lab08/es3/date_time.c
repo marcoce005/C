@@ -2,7 +2,7 @@
 
 #include "date_time.h"
 
-datetime_t init_datetime(FILE *fp_in)
+datetime_t datetime_from_file(FILE *fp_in)
 {
     int YYYY,
         MM,
@@ -12,6 +12,12 @@ datetime_t init_datetime(FILE *fp_in)
 
     fscanf(fp_in, "%d/%d/%d %d:%d", &YYYY, &MM, &DD, &hh, &mm);
     datetime_t x = {YYYY, MM, DD, hh, mm};
+    return x;
+}
+
+datetime_t datetime_from_str(char *str) {
+    datetime_t x;
+    sscanf(str, "%d/%d/%d %d:%d", &x.YYYY, &x.MM, &x.DD, &x.hh, &x.mm);
     return x;
 }
 

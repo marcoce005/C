@@ -46,7 +46,11 @@ void Stock_print(Stock s)
     if (s == NULL)
         printf("\nStock not found.\n");
     else
+    {
         printf("\nCode --> %s\nTransaction --> %d\n", s->code, s->n_transaction);
+        Prices_BST_print(s->quotations);
+        printf("\n");
+    }
 }
 
 Stock_list Stock_list_init(void)
@@ -94,7 +98,7 @@ static link list_ins(link h, char *code, int transaction)
     return h;
 }
 
-Stock_list Stock_get_from_file(FILE *fp_in)
+Stock_list Stock_list_get_from_file(FILE *fp_in)
 {
     Stock_list l = Stock_list_init();
     char buf[STOCK_COD_LEN];
@@ -113,10 +117,10 @@ Stock_list Stock_get_from_file(FILE *fp_in)
         arr_qty = (int *)malloc(n * sizeof(int));
         for (j = 0; j < n; j++)
         {
-            arr_date[j] = init_datetime(fp_in);
+            arr_date[j] = datetime_from_file(fp_in);
             fscanf(fp_in, "%d %d", arr_values + j, arr_qty + j);
         }
-        Prices_BST_fill(l->head->stock->quotations, arr_date, arr_values, arr_qty, n);
+        Prices_BST_fill(Stock_list_search_by_code(l, buf)->quotations, arr_date, arr_values, arr_qty, n);
 
         free(arr_date);
         free(arr_values);
@@ -135,4 +139,57 @@ static Stock search_list(link h, char *code)
     search_list(h->next, code);
 }
 
-Stock Stock_search_by_code(Stock_list l, char *code) { return search_list(l->head, code); }
+Stock Stock_list_search_by_code(Stock_list l, char *code)
+{
+    if (l == NULL)
+    {
+        printf("\nYou have to get informations from file before search.\n");
+        return NULL;
+    }
+    return search_list(l->head, code);
+}
+
+void Stock_search_quotation(Stock s, char *date)
+{
+    if (s == NULL)
+    {
+        Stock_print(s);
+        return;
+    }
+
+    datetime_t datetime = datetime_from_str(strcat(date, " 00:00"));
+
+    datetime_print(stdout, datetime);
+    printf("\n%s\n", date);
+
+    float ans = Prices_BST_search(s->quotations, datetime);
+    if (ans < 0)
+    {
+        printf("\nQuotation in date ");
+        datetime_print(stdout, datetime);
+        printf(" not found.\n");
+    }
+    else
+        printf("\nQuotation in date %04d/%02d/%02d is %.2f$.\n", datetime.YYYY, datetime.MM, datetime.DD, ans);
+}
+
+void Stock_search_min_max_quotations_beetwen_dates(Stock s, char *d0, char *d1)
+{
+    if (s == NULL)
+    {
+        Stock_print(s);
+        return;
+    }
+
+    datetime_t d_min = datetime_from_str(strcat(d0, " 00:00")),
+               d_max = datetime_from_str(strcat(d1, " 00:00")),
+               tmp;
+
+    if (date_compare(d_min, d_max) > 0)
+    {
+        tmp = d_min;
+        d_min = d_max;
+        d_max = tmp;
+    }
+    Prices_BST_min_max_beetwen_dates(s->quotations, d_min, d_max);
+}

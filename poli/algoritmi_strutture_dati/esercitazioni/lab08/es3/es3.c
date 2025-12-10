@@ -17,7 +17,7 @@ typedef enum
 int main(void)
 {
     FILE *fp = NULL;
-    char buf[BUF_SIZE];
+    char buf[BUF_SIZE], buf1[BUF_SIZE];
     int exit = 0;
     command_t action;
     Stock_list stocks = NULL;
@@ -47,28 +47,42 @@ int main(void)
                 break;
             }
 
-            stocks = Stock_get_from_file(fp);
+            stocks = Stock_list_get_from_file(fp);
             fclose(fp);
             break;
 
         case search_stock:
             printf("\nInsert stock's code:\n--> ");
             scanf("%s", buf);
-            
-            selected = Stock_search_by_code(stocks, buf);
+
+            selected = Stock_list_search_by_code(stocks, buf);
             Stock_print(selected);
             break;
 
         case search_quotation:
-            /* code */
+            printf("\nInsert stock's code:\n--> ");
+            scanf("%s", buf);
+            selected = Stock_list_search_by_code(stocks, buf);
+            printf("\nInsert date of quotation [format YYYY/MM/DD]:\n--> ");
+            scanf("%s", buf);
+            Stock_search_quotation(selected, buf);
             break;
 
         case get_min_max_quotation:
-            /* code */
+            printf("\nInsert stock's code:\n--> ");
+            scanf("%s", buf);
+            selected = Stock_list_search_by_code(stocks, buf);
+            printf("\nInsert the start date [format YYYY/MM/DD]:\n--> ");
+            scanf("%s", buf);
+            printf("\nInsert the end date [format YYYY/MM/DD]:\n--> ");
+            scanf("%s", buf1);
+            Stock_search_min_max_quotations_beetwen_dates(selected, buf, buf1);
             break;
 
         case balance_tree:
-            /* code */
+            printf("\nInsert stock's code:\n--> ");
+            scanf("%s", buf);
+            selected = Stock_list_search_by_code(stocks, buf);
             break;
 
         case quit:
