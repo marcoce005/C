@@ -16,6 +16,7 @@ int main(void) {
     Graph g = Graph_load(fp);
 
 
+    Graph_free(g);
     fclose(fp);
     return 0;
 }

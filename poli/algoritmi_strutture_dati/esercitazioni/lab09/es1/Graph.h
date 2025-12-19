@@ -12,6 +12,8 @@ typedef struct graph *Graph;
 
 Graph Graph_init(int V);
 
+void Graph_free(Graph g);
+
 Graph Graph_load(FILE *fp_in);
 
 #endif
