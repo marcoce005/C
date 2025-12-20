@@ -3,8 +3,6 @@
 
 #include "Graph.h"
 
-#define DEFAULT_WEIGHT 0
-
 typedef struct node_s *link;
 typedef struct node_s
 {
@@ -117,7 +115,7 @@ Graph Graph_load(FILE *fp_in)
     return g;
 }
 
-edge_t *Graph_edges(Graph g)
+edge_t *Graph_edges(Graph g, int *n)
 {
     edge_t *arr = (edge_t *)malloc(g->E * sizeof(edge_t));
     for (int i = 0, index = 0; i < g->V; i++)
@@ -126,8 +124,12 @@ edge_t *Graph_edges(Graph g)
             for (link x = g->list_adj[i]; x != NULL; x = x->next)
                 arr[index++] = edge_create(i, x->v, x->wt);
     }
+    if (n != NULL)
+        *n = g->E;
     return arr;
 }
+
+int Graph_n_vertices(Graph g) { return g->V; }
 
 static int dfs_r(Graph g, int v, int *pre, int *post)
 {
@@ -248,7 +250,7 @@ subset_t *Graph_subset_2_create_DAG(Graph g, int *n_subsets)
         return NULL;
     }
 
-    edge_t *edges = Graph_edges(g);
+    edge_t *edges = Graph_edges(g, NULL);
     int i, k, val[g->E], *sol, **subset, **valid_sub, n_sols, index;
 
     for (int i = 0; i < g->E; val[i] = i, i++)
@@ -292,7 +294,10 @@ subset_t *Graph_subset_2_create_DAG(Graph g, int *n_subsets)
 void Graph_print_subset(subset_t *subsets, int n)
 {
     if (n == 0 && subsets == NULL)
+    {
         printf("\nThe Graph is already a DAG.\n");
+        return;
+    }
 
     printf("\nSubsets that made the graph a DAG:");
     for (int i = 0; i < n; i++)

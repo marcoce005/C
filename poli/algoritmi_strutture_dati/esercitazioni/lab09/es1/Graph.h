@@ -22,7 +22,9 @@ void Graph_free(Graph g);
 
 Graph Graph_load(FILE *fp_in);
 
-edge_t *Graph_edges(Graph g);
+edge_t *Graph_edges(Graph g, int *n);
+
+int Graph_n_vertices(Graph g);
 
 subset_t *Graph_subset_2_create_DAG(Graph g, int *n_subsets);
 

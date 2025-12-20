@@ -19,10 +19,16 @@ int main(void)
 
     int n;
     subset_t *subsets = Graph_subset_2_create_DAG(g, &n);
+    
     Graph_print_subset(subsets, n);
+
+    printf("\n\n");
+
+    DAG d = DAG_create_from_graph(g, subsets, n);
 
     Graph_free(g);
     Graph_free_subsets(subsets, n);
+    DAG_free(d);
     fclose(fp);
     return 0;
 }
