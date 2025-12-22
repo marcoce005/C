@@ -11,4 +11,6 @@ void DAG_free(DAG d);
 
 DAG DAG_create_from_graph(Graph g, subset_t *subsets, int n);
 
+void DAG_cal_max_distance(DAG d);
+
 #endif

@@ -26,6 +26,8 @@ int main(void)
 
     DAG d = DAG_create_from_graph(g, subsets, n);
 
+    DAG_cal_max_distance(d);
+
     Graph_free(g);
     Graph_free_subsets(subsets, n);
     DAG_free(d);
