@@ -20,8 +20,9 @@ queue queue_init(int size)
     }
     queue q = (queue)malloc(sizeof(*q));
     q->q = (item *)malloc((size + 1) * sizeof(item));
-    q->head = q->tail = 0;
-    q->N = size + 1;
+    q->head = q->N = size + 1;
+    q->tail = 0;
+    return q;
 }
 
 void queue_free(queue q)
@@ -37,7 +38,7 @@ void queue_free(queue q)
 
 int queue_empty(queue q) { return q->head % q->N == q->tail; }
 
-int queue_full(queue q) { return (q->tail + 1) % q->N == q->head; }
+int queue_full(queue q) { return (q->tail + 1) % q->N == q->head % q->N; }
 
 void queue_put(queue q, item val)
 {
@@ -78,7 +79,6 @@ void queue_print(queue q, char *prefix, char *suffix, char *end)
         printf("\nqueue error: queue have to be initialized if you want to print it.\n");
         return;
     }
-
     for (int i = q->head % q->N; i != q->tail; i++, i %= q->N)
         printf("%s%d%s", prefix, q->q[i], suffix);
     printf("%s", end);
