@@ -1,0 +1,12 @@
+CC = gcc
+FLAGS = -Wall -g
+
+all: install
+
+target: copy_file_POSIX.c
+	$(CC) $(FLAGS) copy_file_POSIX.c -o copy_POSIX
+
+install: target
+	mkdir -p ./bin
+	mv ./copy_POSIX ./bin/
+	pwd
