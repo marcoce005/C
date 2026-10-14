@@ -1,0 +1,19 @@
+CC = gcc
+FLAGS = -Wall -g
+
+.PHONY: all
+
+all: install
+
+copy_file_POSIX.o: copy_file_POSIX.c
+	$(CC) $(FLAGS) -c copy_file_POSIX.c
+
+target: copy_file_POSIX.o
+	$(CC) $(FLAGS) copy_file_POSIX.o -o copy_POSIX
+
+install: target
+	mkdir -p ./bin
+	mv ./copy_POSIX ./bin/
+
+clean:
+	rm *.o

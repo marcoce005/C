@@ -1,0 +1,26 @@
+CC = gcc
+FLAGS = -Wall -g
+SRC = copy_file_POSIX.c
+OBJ = copy_file_POSIX.o
+EXE = copy_POSIX
+PATH_EXE = ./bin
+
+.PHONY: all
+
+all: install
+
+copy_file_POSIX.o: 
+	$(CC) $(FLAGS) -c $(SRC)
+
+target: $(OBJ)
+	$(CC) $(FLAGS) $(OBJ) -o $(EXE)
+
+install: target
+	mkdir -p $(PATH_EXE)
+	mv $(EXE) $(PATH_EXE)
+
+clean:
+	rm *.o
+
+distclean: clean
+	rm -rf $(PATH_EXE)
