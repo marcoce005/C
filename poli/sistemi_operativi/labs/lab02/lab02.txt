@@ -1,0 +1,106 @@
+Laurea in Ingegneria Informatica
+Corso di Sistemi Operativi
+Esercizi proposti per il laboratorio
+ 
+Esercitazione di laboratorio numero 02
+--------------------------------------
+
+Esercizio 01
+Analisi di programmi concorrenti
+--------------------------------
+
+Rappresentare il grafo di controllo del flusso (CFG)
+e l'albero di generazione dei processi dei seguenti
+tratti di codice.
+Indicare inoltre l'output prodotto su video.
+Verificare il risultato predetto tramite esecuzione.
+
+A.
+for (i=1; i<=2; i++) {
+  if (!fork ())
+    printf ("%d\n", i);
+}
+printf ("%d\n", i);
+
+B.
+for(i=3; i>1; i--) {
+  if (fork ())
+    printf ("%d\n", i);
+}
+printf ("%d\n", i);
+
+C.
+for (i=0; i<2; i++) {
+  if (fork ())
+    fork ();
+}
+printf ("%d\n", i);
+
+D.
+for (i=2; i>=1; i--) {
+  if (!fork ())
+    printf ("%d\n", -i);
+  else
+    printf ("%d\n", i);
+}
+
+
+
+Esercizio 02
+System call fork e comandi di shell per processi
+------------------------------------------------
+
+Un programma riceve due valori interi sulla riga di comando,
+denominati n e t.
+Il programma (processo padre) deve eseguire 2 figli e terminare.
+Ciascun figlio deve eseguire a sua volta due figli e terminare.
+Il procedimento deve andare avanti sino a quando sono in esecuzione
+i 2^n processi sulle foglie dell'albero.
+Questi ultimi aspettano per t secondi e visualizzano (a video)
+un messaggio di terminazione.
+Si noti che ogni processo (ad albero) ne esegue altri due.
+Solo quelli sulle foglie dell'albero dormono e visualizzano un
+messaggio.
+Qual e' l'ordine di terminazione dei processi?
+E' sempre lo stesso?
+Come si possono riconoscere (ppid)?
+
+Una volta eseguito il programma:
+A. cercare il pid dei vari processi con il comando ps
+   - dalla stessa shell
+   - da un'altra shell
+B. terminare l'esecuzione di alcuni processi
+   con il comando kill eseguito
+   - dalla stessa shell
+   - da un'altra shell
+
+
+
+Esercizio 03
+Grafo di precedenza
+-------------------
+
+Utilizzando le system call fork e wait, realizzare il seguente
+grafo di precedenza.
+
+        P1
+       /  \ 
+      /    \ 
+    P2      P3
+    /\      /\
+   /  \    /  \
+ P4   P5  |   P6
+   \  /    \  /
+    \/      \/
+    P7      P8
+      \    /
+       \  / 
+        P9
+
+Si osservi che tutti gli archi sono orientati verso il basso.
+Ogni processo Pi corrisponda a un messaggio di stampa
+(si stampi la stringa "Pi" e il PID del processo).
+
+Verificare le precedenza siano rispettate inserendo delle
+system call sleep nei vari rami del programma.
+
